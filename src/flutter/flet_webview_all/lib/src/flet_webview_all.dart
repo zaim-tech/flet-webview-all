@@ -15,13 +15,12 @@ class FletWebviewAllControl extends StatelessWidget {
     String? url = control.getString("url");
     String? html = control.getString("html");
     bool zoomEnabled = control.getBool("zoom_enabled", true) ?? true;
-    bool javascriptEnabled = control.getBool("javascript_enabled", true) ?? true;
     String? userAgent = control.getString("user_agent");
 
     // Determine initial content - use url if available, otherwise html
     String initialContent = url ?? html ?? "about:blank";
 
-    // Use the platform-specific implementation
+    // Use the platform-specific implementation imported above
     Widget myControl = buildWebviewWidget(
       initialContent: initialContent,
       userAgent: userAgent,
