@@ -1,0 +1,19 @@
+name: flet_webview_all
+description: Flet FletWebviewAll control - A unified webview control for displaying web content across all platforms
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flet: ^0.85.2
+  flutter:
+    sdk: flutter
+  webview_all: ^0.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0

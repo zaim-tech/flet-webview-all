@@ -1,0 +1,73 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.venv
+venv/
+ENV/
+env/
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+
+# Flutter
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+pubspec.lock
+build/
+
+# Flet
+.flet/
+flet_build/
+build/
+dist/
+
+# Project specific
+.env
+.env.local
+*.log
+.firebase/
+firebase-debug.log
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+.localized
+
+# Windows
+Thumbs.db
+ehthumbs.db
+
+# Generated files
+site/
+.mkdocs.yml.bak

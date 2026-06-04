@@ -1,0 +1,35 @@
+[project]
+name = "flet-webview-all"
+version = "0.1.0"
+description = "FletWebviewAll control for Flet"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Flet contributors", email = "you@example.com" }
+]
+dependencies = [
+    "flet>=0.85.2",
+]
+
+[dependency-groups]
+dev = [
+    "mkdocs",
+    "mkdocs-material",
+    "mkdocstrings[python]"
+]
+
+[project.urls]
+Homepage = "https://mydomain.dev"
+Documentation = "https://github.com/MyGithubAccount/flet-webview-all"
+Repository = "https://github.com/MyGithubAccount/flet-webview-all"
+Issues = "https://github.com/MyGithubAccount/flet-webview-all/issues"
+
+[tool.setuptools.package-data]
+"flutter.flet_webview_all" = ["**/*"]
+
+[tool.setuptools]
+license-files = []
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
