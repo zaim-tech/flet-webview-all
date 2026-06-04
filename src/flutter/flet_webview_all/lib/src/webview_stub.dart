@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 /// Build a fallback widget for web platform (webview_all not supported)
 Widget buildWebviewWidget({
   required String initialContent,
+  required bool javascriptEnabled,
+  required bool allowNavigation,
   String? userAgent,
   bool zoomEnabled = true,
 }) {

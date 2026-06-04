@@ -16,6 +16,8 @@ def main(page: ft.Page):
     def url_change(e):
         nonlocal current_url
         current_url = url_input.value
+        webview.url = current_url
+        webview.html = None
         url_input.value = ""
         page.update()
 
@@ -23,12 +25,19 @@ def main(page: ft.Page):
         nonlocal current_url
         if example_name == "google":
             current_url = "https://www.google.com"
+            webview.url = current_url
+            webview.html = None
         elif example_name == "github":
             current_url = "https://github.com"
+            webview.url = current_url
+            webview.html = None
         elif example_name == "flutter":
             current_url = "https://flutter.dev"
+            webview.url = current_url
+            webview.html = None
         elif example_name == "html":
             current_url = None
+            webview.url = None
             # Create webview with HTML content
             webview.html = """
             <!DOCTYPE html>
