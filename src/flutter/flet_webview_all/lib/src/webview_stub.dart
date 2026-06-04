@@ -5,6 +5,7 @@ Widget buildWebviewWidget({
   required String initialContent,
   required bool javascriptEnabled,
   required bool allowNavigation,
+  required bool debuggingEnabled,
   String? userAgent,
   bool zoomEnabled = true,
 }) {

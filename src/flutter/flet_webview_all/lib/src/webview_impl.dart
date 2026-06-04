@@ -6,6 +6,7 @@ Widget buildWebviewWidget({
   required String initialContent,
   required bool javascriptEnabled,
   required bool allowNavigation,
+  required bool debuggingEnabled,
   String? userAgent,
   bool zoomEnabled = true,
 }) {
@@ -13,6 +14,7 @@ Widget buildWebviewWidget({
     initialContent: initialContent,
     javascriptEnabled: javascriptEnabled,
     allowNavigation: allowNavigation,
+    debuggingEnabled: debuggingEnabled,
     userAgent: userAgent,
     zoomEnabled: zoomEnabled,
   );
@@ -22,6 +24,7 @@ class _WebviewAllWidget extends StatefulWidget {
   final String initialContent;
   final bool javascriptEnabled;
   final bool allowNavigation;
+  final bool debuggingEnabled;
   final String? userAgent;
   final bool zoomEnabled;
 
@@ -29,6 +32,7 @@ class _WebviewAllWidget extends StatefulWidget {
     required this.initialContent,
     required this.javascriptEnabled,
     required this.allowNavigation,
+    required this.debuggingEnabled,
     required this.userAgent,
     required this.zoomEnabled,
   });
@@ -54,6 +58,7 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
 
     if (oldWidget.javascriptEnabled != widget.javascriptEnabled ||
         oldWidget.allowNavigation != widget.allowNavigation ||
+        oldWidget.debuggingEnabled != widget.debuggingEnabled ||
         oldWidget.userAgent != widget.userAgent ||
         oldWidget.zoomEnabled != widget.zoomEnabled) {
       _configureController();
@@ -84,6 +89,12 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
         ),
       )
       ..enableZoom(widget.zoomEnabled);
+
+    if (widget.debuggingEnabled) {
+      _controller.setOnConsoleMessage((JavaScriptConsoleMessage message) {
+        debugPrint("FletWebviewAll console: ${message.message}");
+      });
+    }
 
     final userAgent = widget.userAgent;
     if (userAgent != null && userAgent.isNotEmpty) {

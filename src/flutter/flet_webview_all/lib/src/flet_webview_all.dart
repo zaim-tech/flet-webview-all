@@ -1,6 +1,6 @@
 import 'package:flet/flet.dart';
 import 'package:flutter/material.dart';
-import 'webview_impl.dart' if (dart.library.html) 'webview_stub.dart';
+import 'webview_impl.dart';
 
 class FletWebviewAllControl extends StatelessWidget {
   final Control control;
@@ -17,6 +17,7 @@ class FletWebviewAllControl extends StatelessWidget {
     bool allowNavigation = control.getBool("allow_navigation", true) ?? true;
     bool zoomEnabled = control.getBool("zoom_enabled", true) ?? true;
     bool javascriptEnabled = control.getBool("javascript_enabled", true) ?? true;
+    bool debuggingEnabled = control.getBool("debugging_enabled", false) ?? false;
     String? userAgent = control.getString("user_agent");
 
     // Determine initial content - use url if available, otherwise html
@@ -27,6 +28,7 @@ class FletWebviewAllControl extends StatelessWidget {
       initialContent: initialContent,
       javascriptEnabled: javascriptEnabled,
       allowNavigation: allowNavigation,
+      debuggingEnabled: debuggingEnabled,
       userAgent: userAgent,
       zoomEnabled: zoomEnabled,
     );
