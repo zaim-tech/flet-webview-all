@@ -38,16 +38,10 @@ env/
 *.sublime-workspace
 
 # Flutter
-.dart_tool/
 .flutter-plugins
-.flutter-plugins-dependencies
-.packages
-pubspec.lock
-build/
 
 # Flet
 .flet/
-flet_build/
 build/
 dist/
 
