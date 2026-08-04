@@ -4,10 +4,10 @@ on:
   release:
     types: [published]
 
-# The build job only needs repository read access. The publishing job receives
-# its short-lived PyPI credential through GitHub's OpenID Connect provider.
+# Repository write access lets the build job attach distributions to the release.
+# The publishing job receives its short-lived PyPI credential through OIDC.
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -35,6 +35,8 @@ jobs:
           name: python-package-distributions
           path: dist/
           if-no-files-found: error
+
+      
 
   publish:
     name: Publish to PyPI
