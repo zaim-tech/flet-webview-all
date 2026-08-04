@@ -131,6 +131,7 @@ src/flet_webview_all/                  Python control
 src/flutter/flet_webview_all/          Flutter extension and webview_all dependency
 examples/flet_webview_all_example/     Sample Flet application
 docs/                                  Additional documentation
+
 ```
 
 To add or update the Flutter dependency, work from the Flutter package directory:
