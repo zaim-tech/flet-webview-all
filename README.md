@@ -6,7 +6,23 @@ The control is a `ft.LayoutControl`, so it can use Flet layout properties such a
 
 ## Installation
 
-Add this Git dependency to your application's `pyproject.toml`:
+Install the published package from PyPI:
+
+```bash
+pip install flet-webview-all
+```
+
+Or add it to your application's `pyproject.toml`:
+
+```toml
+[project]
+dependencies = [
+    "flet>=0.86.5",
+    "flet-webview-all",
+]
+```
+
+To install the latest unreleased version directly from GitHub instead, use:
 
 ```toml
 [project]
@@ -14,12 +30,6 @@ dependencies = [
     "flet>=0.86.5",
     "flet-webview-all @ git+https://github.com/zaim-tech/flet-webview-all.git",
 ]
-```
-
-Then install the project dependencies with your preferred package manager, for example:
-
-```bash
-pip install .
 ```
 
 For a local checkout during development, add the package as a path dependency instead. See the included [example application](examples/flet_webview_all_example/) for a working configuration.
