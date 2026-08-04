@@ -1,317 +1,141 @@
 # flet-webview-all
 
-A Flet extension that provides a unified webview control for displaying web content across all platforms using the `webview_all` Flutter package.
+`flet-webview-all` is a Flet extension that embeds web content in a Flet application. It wraps [`webview_all`](https://pub.dev/packages/webview_all), a Flutter WebView implementation with support for Android, iOS, Linux, macOS, Windows, and the web.
 
-## Features
-
-- **Cross-Platform Support**: Works seamlessly on Android, iOS, macOS, Windows, and Web
-- **URL Loading**: Load any HTTP, HTTPS, file://, or data: URLs
-- **HTML Content**: Display HTML content directly without external URLs
-- **JavaScript Support**: Enable or disable JavaScript execution
-- **Navigation Control**: Allow or restrict user navigation
-- **Zoom Support**: Built-in zoom controls
-- **Custom User Agent**: Set custom user agent strings for requests
-- **Debug Support**: Enable debugging for development
+The control is a `ft.LayoutControl`, so it can use Flet layout properties such as `expand`, `width`, `height`, and `visible`.
 
 ## Installation
 
-### Option 1: Git Dependency
-
-Add the dependency to your `pyproject.toml`:
+Add this Git dependency to your application's `pyproject.toml`:
 
 ```toml
+[project]
 dependencies = [
-  "flet-webview-all @ git+https://github.com/yourusername/flet-webview-all",
-  "flet>=0.85.2",
+    "flet>=0.86.5",
+    "flet-webview-all @ git+https://github.com/zaim-tech/flet-webview-all.git",
 ]
 ```
 
-### Option 2: PyPI Dependency (when published)
+Then install the project dependencies with your preferred package manager, for example:
 
-```toml
-dependencies = [
-  "flet-webview-all",
-  "flet>=0.85.2",
-]
-```
-
-## Quick Start
-
-### Build the Extension
-
-1. Navigate to the example folder:
 ```bash
-cd examples/flet_webview_all_example
+pip install .
 ```
 
-2. Build for your platform:
-```bash
-# macOS
-flet build macos -v
+For a local checkout during development, add the package as a path dependency instead. See the included [example application](examples/flet_webview_all_example/) for a working configuration.
 
-# Windows
-flet build windows -v
-
-# Android
-flet build apk -v
-
-# iOS
-flet build ipa -v
-
-# Web
-flet build web -v
-```
-
-3. Run the built app:
-```bash
-# macOS
-open build/macos/flet-webview-all-example.app
-
-# Windows
-flet run
-```
-
-### Basic Usage
+## Usage
 
 ```python
 import flet as ft
+
 from flet_webview_all import FletWebviewAll
 
+
 def main(page: ft.Page):
-    page.title = "WebView Example"
-    
+    page.title = "WebView example"
     page.add(
         FletWebviewAll(
-            url="https://www.google.com",
+            url="https://flet.dev",
             expand=True,
         )
     )
 
-ft.run(main)
-```
-
-## Properties
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `url` | `Optional[str]` | `None` | URL to load in the webview |
-| `html` | `Optional[str]` | `None` | HTML content to display directly |
-| `allow_navigation` | `bool` | `True` | Allow navigation to new URLs |
-| `zoom_enabled` | `bool` | `True` | Enable zoom controls |
-| `javascript_enabled` | `bool` | `True` | Enable JavaScript execution |
-| `user_agent` | `Optional[str]` | `None` | Custom User-Agent string |
-| `debugging_enabled` | `bool` | `False` | Enable debugging features |
-
-## Examples
-
-### Display a Website
-
-```python
-import flet as ft
-from flet_webview_all import FletWebviewAll
-
-def main(page: ft.Page):
-    page.add(
-        FletWebviewAll(
-            url="https://flutter.dev",
-            expand=True,
-        )
-    )
 
 ft.run(main)
 ```
 
-### Display HTML Content
+### Render HTML directly
+
+Pass a complete HTML document using `html`. The control loads `url` when it is set; otherwise, it uses `html`.
 
 ```python
-import flet as ft
-from flet_webview_all import FletWebviewAll
-
-def main(page: ft.Page):
-    html_content = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Hello</title>
-        <style>
-            body { font-family: Arial; margin: 20px; }
-            h1 { color: #007AFF; }
-        </style>
-    </head>
-    <body>
-        <h1>Hello from FletWebviewAll!</h1>
-        <p>This HTML is rendered directly in the webview.</p>
-    </body>
-    </html>
-    """
-    
-    page.add(
-        FletWebviewAll(
-            html=html_content,
-            expand=True,
-        )
-    )
-
-ft.run(main)
-```
-
-### Interactive Webview
-
-```python
-import flet as ft
-from flet_webview_all import FletWebviewAll
-
-def main(page: ft.Page):
-    webview = FletWebviewAll(
-        url="https://www.example.com",
+page.add(
+    FletWebviewAll(
+        html="""
+        <!doctype html>
+        <html>
+          <body><h1>Hello from Flet</h1></body>
+        </html>
+        """,
         expand=True,
     )
-    
-    def toggle_js(e):
-        webview.javascript_enabled = not webview.javascript_enabled
-        page.update()
-    
-    def toggle_zoom(e):
-        webview.zoom_enabled = not webview.zoom_enabled
-        page.update()
-    
-    page.add(
-        ft.Column([
-            ft.Row([
-                ft.ElevatedButton("Toggle JS", on_click=toggle_js),
-                ft.ElevatedButton("Toggle Zoom", on_click=toggle_zoom),
-            ]),
-            webview,
-        ], expand=True)
-    )
-
-ft.run(main)
+)
 ```
 
-## Project Structure
+## Control properties
 
+| Property | Type | Default | Description |
+| --- | --- | --- | --- |
+| `url` | `str \| None` | `None` | URL to load. When set, it takes precedence over `html`. |
+| `html` | `str \| None` | `None` | Complete HTML document to render when `url` is not set. |
+| `allow_navigation` | `bool` | `True` | Allows navigation requests from the WebView. |
+| `zoom_enabled` | `bool` | `True` | Enables WebView zoom where the platform supports it. |
+| `javascript_enabled` | `bool` | `True` | Enables unrestricted JavaScript execution. |
+| `user_agent` | `str \| None` | `None` | Overrides the WebView user-agent when provided. |
+| `debugging_enabled` | `bool` | `False` | Prints JavaScript console messages through Flutter's debug logger. |
+
+Use `page.update()` after changing a control property at runtime:
+
+```python
+webview.javascript_enabled = False
+page.update()
 ```
-flet-webview-all/
-├── src/
-│   ├── flet_webview_all/          # Python package
-│   │   ├── __init__.py
-│   │   └── flet_webview_all.py    # Control definition
-│   └── flutter/
-│       └── flet_webview_all/      # Flutter package
-│           ├── pubspec.yaml
-│           ├── lib/
-│           │   ├── flet_webview_all.dart
-│           │   └── src/
-│           │       ├── extension.dart
-│           │       └── flet_webview_all.dart
-├── examples/
-│   └── flet_webview_all_example/  # Example app
-│       ├── src/
-│       │   └── main.py
-│       └── pyproject.toml
-├── docs/                           # Documentation
-│   ├── index.md
-│   └── FletWebviewAll.md
-└── README.md
+
+## Platform support
+
+Support is supplied by the underlying [`webview_all`](https://pub.dev/packages/webview_all) package:
+
+| Platform | Minimum requirement / implementation |
+| --- | --- |
+| Android | API 24+ |
+| iOS | 13.0+ (`WKWebView`) |
+| Linux | `webkit2gtk-4.1` |
+| macOS | 10.15+ (`WKWebView`) |
+| Windows | Windows 10 version 1809+ (`WebView2`) |
+| Web | Modern browser |
+
+Platform WebView engines can differ in their capabilities. Test the settings your application relies on on each target platform.
+
+## Build the example
+
+Flet extensions include Python and Flutter code. After changing the Flutter package, rebuild the example application; Python-only changes can be run without rebuilding once the extension has been built for the target platform.
+
+```bash
+cd examples/flet_webview_all_example
+flet build windows -v
+```
+
+Replace `windows` with another supported Flet build target, such as `macos`, `apk`, `ipa`, or `web`. To run the example during Python development:
+
+```bash
+flet run
 ```
 
 ## Development
 
-### Setup Development Environment
+The project follows Flet's extension structure:
 
-1. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+```text
+src/flet_webview_all/                  Python control
+src/flutter/flet_webview_all/          Flutter extension and webview_all dependency
+examples/flet_webview_all_example/     Sample Flet application
+docs/                                  Additional documentation
 ```
 
-2. Install dependencies:
-```bash
-pip install flet>=0.85.2
-```
-
-3. Build and test the extension:
-```bash
-cd examples/flet_webview_all_example
-flet build macos -v
-```
-
-### Making Changes
-
-**Python Changes:**
-- Edit files in `src/flet_webview_all/`
-- Changes take effect immediately without rebuild
-
-**Flutter/Dart Changes:**
-- Edit files in `src/flutter/flet_webview_all/`
-- Rebuild required: `flet build macos -v`
-
-### Add Flutter Dependencies
-
-To add new Flutter packages:
+To add or update the Flutter dependency, work from the Flutter package directory:
 
 ```bash
 cd src/flutter/flet_webview_all
-flutter pub add package_name
+flutter pub get
 ```
-
-Then update the Dart implementation to use the new package.
-
-## Platform Support
-
-| Platform | Status | Requirements |
-|----------|--------|--------------|
-| Android | ✅ Supported | API 19+ |
-| iOS | ✅ Supported | iOS 11.0+ |
-| macOS | ✅ Supported | macOS 10.11+ |
-| Windows | ✅ Supported | Windows 10+, WebView2 |
-| Web | ✅ Supported | Modern browsers |
-
-## Documentation
-
-Full documentation is available in the [docs](docs/) folder and includes:
-- [Index](docs/index.md) - Getting started guide
-- [FletWebviewAll Reference](docs/FletWebviewAll.md) - API reference with examples
-
-## Troubleshooting
-
-### Webview not displaying
-
-- Ensure the URL is valid and accessible
-- For local files, use `file://` URL scheme
-- Check network connectivity
-- Try enabling debugging: `debugging_enabled=True`
-
-### JavaScript not working
-
-- Verify `javascript_enabled=True`
-- Check the browser console for errors
-- Enable debugging to see error messages
-
-### Build issues
-
-- Clear Flutter cache: `flutter clean`
-- Clear Flet cache: `flet clean`
-- Update dependencies: `flutter pub get`
-- Rebuild with verbose output: `flet build macos -vv`
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit issues and pull requests.
-
-## License
-
-See [LICENSE](LICENSE) file for details.
 
 ## References
 
-- [Flet Documentation](https://flet.dev)
-- [webview_all Package](https://pub.dev/packages/webview_all)
-- [Flutter Documentation](https://flutter.dev)
+- [flet-webview-all repository](https://github.com/zaim-tech/flet-webview-all)
+- [webview_all package](https://pub.dev/packages/webview_all)
+- [Creating a Flet extension](https://flet.dev/docs/extend/user-extensions/)
 
-## Support
+## License
 
-For issues and questions:
-- Check the [documentation](docs/)
-- Review the [example app](examples/flet_webview_all_example/)
-- Open an issue on GitHub
+See [LICENSE](LICENSE).
