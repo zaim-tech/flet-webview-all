@@ -3,7 +3,7 @@ from typing import Optional
 import flet as ft
 
 
-@ft.control("FletWebviewAll")
+@ft.control("flet_webview_all")
 class FletWebviewAll(ft.LayoutControl):
     """
     FletWebviewAll Control - A unified webview control for displaying web content across all platforms.

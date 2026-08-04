@@ -7,7 +7,7 @@ class Extension extends FletExtension {
   @override
   Widget? createWidget(Key? key, Control control) {
     switch (control.type) {
-      case "FletWebviewAll":
+      case "flet_webview_all":
         return FletWebviewAllControl(control: control);
       default:
         return null;
