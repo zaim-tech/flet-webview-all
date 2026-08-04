@@ -1,0 +1,22 @@
+name: Build Windows example
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: examples/flet_webview_all_example
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Build Windows application
+        run: uv run flet build windows --yes --verbose
