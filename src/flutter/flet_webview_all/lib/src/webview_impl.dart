@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:webview_all/webview_all.dart';
 
@@ -118,6 +120,79 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return WebViewWidget(controller: _controller);
+    // On Windows, webview_all renders WebView2 into a Flutter GPU texture.
+    // During a fullscreen transition (and occasionally a DPI transition) the
+    // texture can retain its old surface dimensions while Flutter stretches it
+    // to the new constraints. Rebuilding the *widget* after the viewport has
+    // settled makes the Windows backend report the new surface size again. The
+    // controller is deliberately retained, so the loaded page and its state
+    // are not recreated.
+    return _ViewportSynchronizedWebView(controller: _controller);
+  }
+}
+
+/// Recreates the Windows texture widget after a top-level metrics or layout
+/// change. A short debounce avoids tearing down the widget for every interim
+/// size emitted while the user is dragging a window border.
+class _ViewportSynchronizedWebView extends StatefulWidget {
+  const _ViewportSynchronizedWebView({required this.controller});
+
+  final WebViewController controller;
+
+  @override
+  State<_ViewportSynchronizedWebView> createState() =>
+      _ViewportSynchronizedWebViewState();
+}
+
+class _ViewportSynchronizedWebViewState
+    extends State<_ViewportSynchronizedWebView> with WidgetsBindingObserver {
+  Timer? _settleTimer;
+  int _viewportGeneration = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void didChangeMetrics() {
+    // Covers fullscreen, restore, and monitor-DPI changes.
+    _scheduleTextureRebuild();
+  }
+
+  void _scheduleTextureRebuild() {
+    _settleTimer?.cancel();
+    _settleTimer = Timer(const Duration(milliseconds: 120), () {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _viewportGeneration++);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return NotificationListener<SizeChangedLayoutNotification>(
+      onNotification: (notification) {
+        // Also cover Flet control/layout changes which do not alter the host
+        // window metrics (for example, a resizable pane).
+        _scheduleTextureRebuild();
+        return false;
+      },
+      child: SizeChangedLayoutNotifier(
+        child: WebViewWidget(
+          key: ValueKey<int>(_viewportGeneration),
+          controller: widget.controller,
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _settleTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 }
