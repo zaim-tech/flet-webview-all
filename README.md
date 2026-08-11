@@ -140,6 +140,11 @@ To add or update the Flutter dependency, work from the Flutter package directory
 cd src/flutter/flet_webview_all
 flutter pub get
 ```
+## ⚠️ Important Note
+
+When running your app without building the extension using flet build ..., you will see an error box instead of the actual webview widget.
+To see the real widget, you must build the extension for your target platform.
+
 
 ## References
 
