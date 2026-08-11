@@ -131,6 +131,7 @@ src/flet_webview_all/                  Python control
 src/flutter/flet_webview_all/          Flutter extension and webview_all dependency
 examples/flet_webview_all_example/     Sample Flet application
 docs/                                  Additional documentation
+
 ```
 
 To add or update the Flutter dependency, work from the Flutter package directory:
@@ -139,6 +140,11 @@ To add or update the Flutter dependency, work from the Flutter package directory
 cd src/flutter/flet_webview_all
 flutter pub get
 ```
+## ⚠️ Important Note
+
+When running your app without building the extension using flet build ..., you will see an error box instead of the actual webview widget.
+To see the real widget, you must build the extension for your target platform.
+
 
 ## References
 
