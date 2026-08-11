@@ -123,17 +123,15 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
     // On Windows, webview_all renders WebView2 into a Flutter GPU texture.
     // During a fullscreen transition (and occasionally a DPI transition) the
     // texture can retain its old surface dimensions while Flutter stretches it
-    // to the new constraints. Rebuilding the *widget* after the viewport has
-    // settled makes the Windows backend report the new surface size again. The
-    // controller is deliberately retained, so the loaded page and its state
-    // are not recreated.
+    // to the new constraints. The wrapper below makes the backend report the
+    // new surface size again without recreating this widget or its controller.
     return _ViewportSynchronizedWebView(controller: _controller);
   }
 }
 
-/// Recreates the Windows texture widget after a top-level metrics or layout
-/// change. A short debounce avoids tearing down the widget for every interim
-/// size emitted while the user is dragging a window border.
+/// Forces the Windows backend to report a settled surface size after a
+/// top-level metrics or layout change. A short debounce avoids doing this for
+/// every interim size emitted while the user is dragging a window border.
 class _ViewportSynchronizedWebView extends StatefulWidget {
   const _ViewportSynchronizedWebView({required this.controller});
 
@@ -147,7 +145,8 @@ class _ViewportSynchronizedWebView extends StatefulWidget {
 class _ViewportSynchronizedWebViewState
     extends State<_ViewportSynchronizedWebView> with WidgetsBindingObserver {
   Timer? _settleTimer;
-  int _viewportGeneration = 0;
+  bool _nudgeViewport = false;
+  int _ignoredSizeNotifications = 0;
 
   @override
   void initState() {
@@ -167,7 +166,17 @@ class _ViewportSynchronizedWebViewState
       if (!mounted) {
         return;
       }
-      setState(() => _viewportGeneration++);
+      // webview_all reports the native WebView2 surface size only when its
+      // Flutter child gets a new layout size. Change it by one physical pixel
+      // for one frame, then restore it. Unlike replacing WebViewWidget, this
+      // leaves the GPU texture mounted and avoids a visible blank flash.
+      _ignoredSizeNotifications = 2;
+      setState(() => _nudgeViewport = true);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() => _nudgeViewport = false);
+        }
+      });
     });
   }
 
@@ -175,15 +184,27 @@ class _ViewportSynchronizedWebViewState
   Widget build(BuildContext context) {
     return NotificationListener<SizeChangedLayoutNotification>(
       onNotification: (notification) {
+        if (_ignoredSizeNotifications > 0) {
+          _ignoredSizeNotifications--;
+          return false;
+        }
         // Also cover Flet control/layout changes which do not alter the host
         // window metrics (for example, a resizable pane).
         _scheduleTextureRebuild();
         return false;
       },
       child: SizeChangedLayoutNotifier(
-        child: WebViewWidget(
-          key: ValueKey<int>(_viewportGeneration),
-          controller: widget.controller,
+        child: Padding(
+          // One physical pixel is enough to make the package call its native
+          // SetSurfaceSize method, while being imperceptible to the user.
+          padding: EdgeInsets.only(
+            right: _nudgeViewport
+                ? 1 / View.of(context).devicePixelRatio
+                : 0,
+          ),
+          child: WebViewWidget(
+            controller: widget.controller,
+          ),
         ),
       ),
     );
