@@ -136,6 +136,5 @@ def main(page: ft.Page):
     page.add(webview)
     
 
-
 if __name__ == "__main__":
     ft.run(main)
