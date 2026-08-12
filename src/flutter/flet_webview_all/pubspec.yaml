@@ -1,6 +1,6 @@
 name: flet_webview_all
 description: Flet FletWebviewAll control - A unified webview control for displaying web content across all platforms
-version: 0.1.1
+version: 0.1.5
 publish_to: none
 
 environment:
