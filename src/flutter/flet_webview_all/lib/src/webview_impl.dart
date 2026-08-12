@@ -145,6 +145,7 @@ class _ViewportSynchronizedWebView extends StatefulWidget {
 class _ViewportSynchronizedWebViewState
     extends State<_ViewportSynchronizedWebView> with WidgetsBindingObserver {
   Timer? _settleTimer;
+  Timer? _pulseTimer;
   bool _nudgeViewport = false;
   int _ignoredSizeNotifications = 0;
 
@@ -170,13 +171,29 @@ class _ViewportSynchronizedWebViewState
       // Flutter child gets a new layout size. Change it by one physical pixel
       // for one frame, then restore it. Unlike replacing WebViewWidget, this
       // leaves the GPU texture mounted and avoids a visible blank flash.
-      _ignoredSizeNotifications = 2;
-      setState(() => _nudgeViewport = true);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() => _nudgeViewport = false);
-        }
-      });
+      _ignoredSizeNotifications = 8;
+      _pulseViewport(3);
+    });
+  }
+
+  void _pulseViewport(int remaining) {
+    if (!mounted) {
+      return;
+    }
+    setState(() => _nudgeViewport = true);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _nudgeViewport = false);
+      // WebView2 can apply the new rasterization scale one compositor frame
+      // after Flutter lays out the texture. Three inexpensive pulses cover
+      // that delayed transition on small windows and DPI changes.
+      if (remaining > 1) {
+        _pulseTimer?.cancel();
+        _pulseTimer = Timer(const Duration(milliseconds: 32),
+            () => _pulseViewport(remaining - 1));
+      }
     });
   }
 
@@ -213,6 +230,7 @@ class _ViewportSynchronizedWebViewState
   @override
   void dispose() {
     _settleTimer?.cancel();
+    _pulseTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
