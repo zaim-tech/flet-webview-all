@@ -124,6 +124,8 @@ flet run
 
 ## Development
 
+Contributions are welcome. See [CONTRIBUTION.md](contribution.md) for the contribution workflow, pull-request expectations, and issue-reporting guidance.
+
 The project follows Flet's extension structure:
 
 ```text
