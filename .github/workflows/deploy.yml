@@ -44,4 +44,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         run: |
-          uv run --with "mkdocs" --with "mkdocs-material" --with "mkdocstrings[python]" mkdocs gh-deploy --force -v
+          uv run --group dev mkdocs gh-deploy --force -v
