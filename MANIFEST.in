@@ -1,0 +1,2 @@
+prune src/flutter/flet_webview_all/build
+prune src/flutter/flet_webview_all/test

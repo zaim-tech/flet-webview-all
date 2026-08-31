@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_all/webview_all.dart';
+import 'webview_environment.dart';
 
 /// Build a WebView widget for mobile and desktop platforms.
 Widget buildWebviewWidget({
@@ -11,8 +13,9 @@ Widget buildWebviewWidget({
   required bool debuggingEnabled,
   String? userAgent,
   bool zoomEnabled = true,
+  int? remoteDebuggingPort,
 }) {
-  return _WebviewAllWidget(
+  final webview = _WebviewAllWidget(
     initialContent: initialContent,
     javascriptEnabled: javascriptEnabled,
     allowNavigation: allowNavigation,
@@ -20,6 +23,77 @@ Widget buildWebviewWidget({
     userAgent: userAgent,
     zoomEnabled: zoomEnabled,
   );
+
+  if (remoteDebuggingPort == null ||
+      kIsWeb ||
+      defaultTargetPlatform != TargetPlatform.windows) {
+    return webview;
+  }
+
+  return _WebViewEnvironmentGate(
+    remoteDebuggingPort: remoteDebuggingPort,
+    child: webview,
+  );
+}
+
+class _WebViewEnvironmentGate extends StatefulWidget {
+  const _WebViewEnvironmentGate({
+    required this.remoteDebuggingPort,
+    required this.child,
+  });
+
+  final int remoteDebuggingPort;
+  final Widget child;
+
+  @override
+  State<_WebViewEnvironmentGate> createState() =>
+      _WebViewEnvironmentGateState();
+}
+
+class _WebViewEnvironmentGateState extends State<_WebViewEnvironmentGate> {
+  late Future<void> _initialization;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialization = ensureWebViewEnvironment(
+      remoteDebuggingPort: widget.remoteDebuggingPort,
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant _WebViewEnvironmentGate oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.remoteDebuggingPort != widget.remoteDebuggingPort) {
+      _initialization = ensureWebViewEnvironment(
+        remoteDebuggingPort: widget.remoteDebuggingPort,
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<void>(
+      future: _initialization,
+      builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return Center(
+            child: SelectableText(
+              'Failed to initialize WebView2 remote debugging: '
+              '${snapshot.error}',
+              textAlign: TextAlign.center,
+            ),
+          );
+        }
+
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return widget.child;
+      },
+    );
+  }
 }
 
 class _WebviewAllWidget extends StatefulWidget {
@@ -191,8 +265,10 @@ class _ViewportSynchronizedWebViewState
       // that delayed transition on small windows and DPI changes.
       if (remaining > 1) {
         _pulseTimer?.cancel();
-        _pulseTimer = Timer(const Duration(milliseconds: 32),
-            () => _pulseViewport(remaining - 1));
+        _pulseTimer = Timer(
+          const Duration(milliseconds: 32),
+          () => _pulseViewport(remaining - 1),
+        );
       }
     });
   }
@@ -215,13 +291,9 @@ class _ViewportSynchronizedWebViewState
           // One physical pixel is enough to make the package call its native
           // SetSurfaceSize method, while being imperceptible to the user.
           padding: EdgeInsets.only(
-            right: _nudgeViewport
-                ? 1 / View.of(context).devicePixelRatio
-                : 0,
+            right: _nudgeViewport ? 1 / View.of(context).devicePixelRatio : 0,
           ),
-          child: WebViewWidget(
-            controller: widget.controller,
-          ),
+          child: WebViewWidget(controller: widget.controller),
         ),
       ),
     );

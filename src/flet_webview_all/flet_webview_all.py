@@ -19,6 +19,9 @@ class FletWebviewAll(ft.LayoutControl):
         javascript_enabled: Whether JavaScript is enabled (default: True)
         user_agent: Custom User-Agent string
         debugging_enabled: Whether debugging is enabled (default: False)
+        remote_debugging_port: Windows-only, startup-time WebView2 CDP port.
+            Must be between 1 and 65535. When set, Playwright can attach to
+            the same visible WebView with chromium.connect_over_cdp().
     """
 
     url: Optional[str] = None
@@ -28,3 +31,4 @@ class FletWebviewAll(ft.LayoutControl):
     javascript_enabled: bool = True
     user_agent: Optional[str] = None
     debugging_enabled: bool = False
+    remote_debugging_port: Optional[int] = None

@@ -5,10 +5,7 @@ import 'webview_impl.dart';
 class FletWebviewAllControl extends StatelessWidget {
   final Control control;
 
-  const FletWebviewAllControl({
-    super.key,
-    required this.control,
-  });
+  const FletWebviewAllControl({super.key, required this.control});
 
   @override
   Widget build(BuildContext context) {
@@ -16,9 +13,12 @@ class FletWebviewAllControl extends StatelessWidget {
     String? html = control.getString("html");
     bool allowNavigation = control.getBool("allow_navigation", true) ?? true;
     bool zoomEnabled = control.getBool("zoom_enabled", true) ?? true;
-    bool javascriptEnabled = control.getBool("javascript_enabled", true) ?? true;
-    bool debuggingEnabled = control.getBool("debugging_enabled", false) ?? false;
+    bool javascriptEnabled =
+        control.getBool("javascript_enabled", true) ?? true;
+    bool debuggingEnabled =
+        control.getBool("debugging_enabled", false) ?? false;
     String? userAgent = control.getString("user_agent");
+    int? remoteDebuggingPort = control.getInt("remote_debugging_port");
 
     // Determine initial content - use url if available, otherwise html
     String initialContent = url ?? html ?? "about:blank";
@@ -31,6 +31,7 @@ class FletWebviewAllControl extends StatelessWidget {
       debuggingEnabled: debuggingEnabled,
       userAgent: userAgent,
       zoomEnabled: zoomEnabled,
+      remoteDebuggingPort: remoteDebuggingPort,
     );
 
     return LayoutControl(control: control, child: myControl);

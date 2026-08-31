@@ -12,6 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   webview_all: ^1.3.3
+  webview_all_windows: ^1.3.3
 
 dev_dependencies:
   flutter_test:

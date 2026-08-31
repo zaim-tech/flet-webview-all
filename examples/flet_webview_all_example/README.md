@@ -25,6 +25,16 @@ pip install -r requirements.txt
 flet run
 ```
 
+On Windows, opt in to the local WebView2 CDP endpoint before starting the app:
+
+```powershell
+$env:FLET_WEBVIEW_ALL_REMOTE_DEBUGGING_PORT = "9222"
+uv run flet run
+```
+
+Then verify that `http://127.0.0.1:9222/json/list` contains the visible
+WebView target. Do not enable this development-only endpoint in production.
+
 ### Building for Distribution
 
 Build for your target platform:
