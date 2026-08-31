@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'LICENSE'      
+      - 'LICENSE'
       - 'docs/**'
       - 'mkdocs.yml'
       - 'pyproject.toml'
@@ -13,35 +13,53 @@ on:
       - 'src/flet_webview_all/**'
       - 'examples/flet_webview_all_example/src/**'
 
-  workflow_dispatch:    # Allow manual trigger from the GitHub Actions UI
+  workflow_dispatch:
 
 concurrency:
-  group: "docs"                   # Prevent multiple overlapping deploys
-  cancel-in-progress: false       # Allow in-progress deploys to finish
+  group: "pages"
+  cancel-in-progress: false
 
 permissions:
-  contents: write  # Required to push to the gh-pages branch
-
-env:
-  GH_TOKEN: ${{ secrets.GH_TOKEN }}         # used by mkdocs for publishing
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  deploy:
-    name: Deploy Documentation
+  build:
+    name: Build documentation
     runs-on: ubuntu-latest
-    if: github.repository == github.event.repository.full_name  # don't run on forks
+    if: github.repository == github.event.repository.full_name
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Setup uv
         uses: astral-sh/setup-uv@v6
 
-      - name: Configure Git for mkdocs
-        run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+      - name: Install docs dependencies
+        run: uv sync --group dev
 
-      - name: Deploy to GitHub Pages
-        run: |
-          uv run --group dev mkdocs gh-deploy --force --strict -v
+      - name: Build docs
+        run: uv run --group dev mkdocs build --strict
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Pages artifact
+        id: deployment
+        uses: actions/deploy-pages@v4
