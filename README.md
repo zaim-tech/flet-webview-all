@@ -203,6 +203,6 @@ To see the real widget, you must build the extension for your target platform.
 ## License
 
 See [LICENSE](LICENSE).
-
+---
 **Made with ❤️ by [Zaim Sheali](https://github.com/zaim-tech)**
 
