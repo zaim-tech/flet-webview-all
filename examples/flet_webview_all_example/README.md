@@ -138,3 +138,17 @@ To run the app whenin using `pip`:
 ```
 flet run [app_directory]
 ```
+## Run from a checkout
+
+`flet run` uses the package installed in the Python interpreter that provides
+the `flet` command. Install this checkout into that interpreter before running
+the example, otherwise Python may import an older PyPI/system copy:
+
+```powershell
+cd examples/flet_webview_all_example
+python -m pip install --user --no-build-isolation --editable ../..
+flet run src/main.py
+```
+
+After changing Dart files in `src/flutter/flet_webview_all`, rebuild the native
+example with `flet build windows -v` before testing those changes.

@@ -82,8 +82,11 @@ page.add(
 | `allow_navigation` | `bool` | `True` | Allows navigation requests from the WebView. |
 | `zoom_enabled` | `bool` | `True` | Enables WebView zoom where the platform supports it. |
 | `javascript_enabled` | `bool` | `True` | Enables unrestricted JavaScript execution. |
+| `javascript_mode` | `str \| bool \| None` | `None` | Overrides `javascript_enabled`: use `"unrestricted"`/`True` or `"disabled"`/`False`. |
+| `javascript_channels` | `list[str] \| None` | `None` | JavaScript bridge names, e.g. `['FletBridge']`. |
 | `user_agent` | `str \| None` | `None` | Overrides the WebView user-agent when provided. |
 | `debugging_enabled` | `bool` | `False` | Prints JavaScript console messages through Flutter's debug logger. |
+| `background_color` | `ft.ColorValue \| None` | `None` | Canvas color used before page content is rendered. |
 | `remote_debugging_port` | `int \| None` | `None` | Windows-only, startup-time WebView2 CDP port (`1..65535`) for attaching Playwright to the visible WebView. |
 
 ### Playwright on Windows
@@ -137,6 +140,65 @@ Use `page.update()` after changing a control property at runtime:
 webview.javascript_enabled = False
 page.update()
 ```
+
+## Events, navigation, and JavaScript
+
+The control emits typed Flet events. Page event handlers receive `e.url`, progress
+handlers receive `e.progress` (0–100), resource error handlers receive
+`e.domain`, `e.description`, `e.error_code`, `e.error_type`, and
+`e.is_for_main_frame`. JavaScript-message handlers receive `e.channel_name` and
+`e.message_body`.
+
+```python
+async def show_title(e):
+    title = await webview.run_javascript_returning_result("document.title")
+    print(title)
+
+webview = FletWebviewAll(
+    url="https://example.com",
+    javascript_channels=["FletBridge"],
+    background_color=ft.Colors.BLUE_GREY_900,
+    on_page_started=lambda e: print("Starting", e.url),
+    on_page_finished=lambda e: print("Finished", e.url),
+    on_progress=lambda e: print(f"{e.progress}%"),
+    on_web_resource_error=lambda e: print(e.error_code, e.description),
+    on_javascript_message=lambda e: print(e.channel_name, e.message_body),
+    expand=True,
+)
+```
+
+After registering `FletBridge`, a page can call:
+
+```javascript
+FletBridge.postMessage("hello from JavaScript");
+```
+
+`on_navigation_request` observes every navigation before the decision is made.
+Set `allow_navigation=False` to block it (apart from the initial URL); Flet's
+event transport is asynchronous, so a Python event handler cannot synchronously
+return a per-request allow/block decision. Change `allow_navigation` before the
+navigation instead when using an application policy. Newly added JavaScript
+channels become available on the next page load, as required by `webview_all`.
+
+All controller methods are async and return results where appropriate:
+
+```python
+await webview.reload()
+await webview.stop_loading()  # best effort: window.stop()
+if await webview.can_go_back():
+    await webview.go_back()
+if await webview.can_go_forward():
+    await webview.go_forward()
+await webview.clear_cache()
+cookies_were_cleared = await webview.clear_cookies()
+current_url = await webview.get_current_url()
+await webview.run_javascript("document.body.classList.add('ready')")
+result = await webview.run_javascript_returning_result("document.title")
+```
+
+`clear_cookies()` applies to all WebViews in the application. `stop_loading()`
+uses the browser-standard `window.stop()` because the upstream controller does
+not expose a native stop-loading method.
 
 ## Platform support
 

@@ -21,6 +21,7 @@ DEFAULT_HTML = """
     <p>This local HTML page is rendered directly in the webview.</p>
     <p>Use the toolbar above to load websites, switch back to this HTML example, or change webview settings.</p>
     <p><button onclick="alert('JavaScript is working!')">Click Me</button></p>
+    <p><button onclick="FletBridge.postMessage('Hello from the embedded page!')">Send message to Python</button></p>
 </body>
 </html>
 """
@@ -32,10 +33,32 @@ def main(page: ft.Page):
     page.title = "FletWebviewAll Example"
     page.window.width = 1000
     page.window.height = 800
-    page.padding = 0
+    page.padding = ft.Padding.all(20)
+    page.theme_mode = ft.ThemeMode.SYSTEM
 
     current_url = None
     webview = None
+    status = ft.Text("Ready")
+    progress = ft.ProgressBar(value=0, width=180)
+
+    def on_page_started(e):
+        status.value = f"Loading: {e.url}"
+        progress.value = 0
+        page.update()
+
+    def on_page_finished(e):
+        status.value = f"Loaded: {e.url}"
+        progress.value = 1
+        page.update()
+
+    def on_progress(e):
+        progress.value = e.progress / 100
+        print(progress.value)
+        page.update()
+
+    def on_javascript_message(e):
+        status.value = f"{e.channel_name}: {e.message_body}"
+        page.update()
 
     def set_webview_url(url: str):
         nonlocal current_url
@@ -61,6 +84,8 @@ def main(page: ft.Page):
             set_webview_url("https://github.com")
         elif example_name == "flutter":
             set_webview_url("https://flutter.dev")
+        elif example_name == "flet":
+            set_webview_url("https://flet.dev")
         elif example_name == "html":
             current_url = None
             webview.url = None
@@ -84,6 +109,7 @@ def main(page: ft.Page):
             ft.Button("Google", on_click=lambda _: load_example("google")),
             ft.Button("GitHub", on_click=lambda _: load_example("github")),
             ft.Button("Flutter", on_click=lambda _: load_example("flutter")),
+            ft.Button("Flet", on_click=lambda _: load_example("flet")),
             ft.Button("HTML Example", on_click=lambda _: load_example("html")),
         ],
         spacing=8,
@@ -100,6 +126,12 @@ def main(page: ft.Page):
         allow_navigation=allow_nav_switch.value,
         zoom_enabled=zoom_switch.value,
         javascript_enabled=js_switch.value,
+        javascript_channels=["FletBridge"],
+        background_color=ft.Colors.BLUE_GREY_900,
+        on_page_started=on_page_started,
+        on_page_finished=on_page_finished,
+        on_progress=on_progress,
+        on_javascript_message=on_javascript_message,
         remote_debugging_port=(
             int(REMOTE_DEBUGGING_PORT) if REMOTE_DEBUGGING_PORT else None
         ),
@@ -116,6 +148,22 @@ def main(page: ft.Page):
     zoom_switch.on_change = on_setting_change
     js_switch.on_change = on_setting_change
 
+    async def go_back(_):
+        if await webview.can_go_back():
+            await webview.go_back()
+
+    async def go_forward(_):
+        if await webview.can_go_forward():
+            await webview.go_forward()
+
+    async def reload(_):
+        await webview.reload()
+
+    async def page_title(_):
+        title = await webview.run_javascript_returning_result("document.title")
+        status.value = f"Page title: {title}"
+        page.update()
+
     controls_panel = ft.Column(
         [
             ft.Row(
@@ -124,18 +172,26 @@ def main(page: ft.Page):
                 wrap=True,
             ),
             ft.Row(
-                [allow_nav_switch, zoom_switch, js_switch],
+                [
+                    ft.IconButton(ft.Icons.ARROW_BACK, on_click=go_back),
+                    ft.IconButton(ft.Icons.ARROW_FORWARD, on_click=go_forward),
+                    ft.IconButton(ft.Icons.REFRESH, on_click=reload),
+                    ft.Button("Read page title", on_click=page_title),
+                    allow_nav_switch,
+                    zoom_switch,
+                    js_switch,
+                ],
                 spacing=12,
                 wrap=True,
             ),
+            ft.Row([progress, status], spacing=12, wrap=True),
         ],
         spacing=6,
     )
 
     page.appbar = ft.AppBar(
         title=controls_panel,
-        toolbar_height=118,
-        bgcolor=ft.Colors.GREY_100,
+        toolbar_height=158,
         automatically_imply_leading=False,
         title_spacing=12,
     )

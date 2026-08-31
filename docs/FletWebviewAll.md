@@ -87,6 +87,29 @@ webview = FletWebviewAll(
 )
 ```
 
+### javascript_mode and javascript_channels
+
+```
+javascript_mode: Optional[str | bool] = None
+javascript_channels: Optional[list[str]] = None
+```
+
+`javascript_mode` overrides `javascript_enabled` when set. Use
+`"unrestricted"`/`True` to enable JavaScript or `"disabled"`/`False` to
+disable it. `javascript_channels` registers names exposed to page JavaScript;
+after a page load it can call `ChannelName.postMessage("message")`.
+
+```python
+webview = FletWebviewAll(
+    url="https://example.com",
+    javascript_channels=["FletBridge"],
+    on_javascript_message=lambda e: print(e.channel_name, e.message_body),
+)
+```
+
+New channels take effect on the next page load, as required by the underlying
+WebView implementation.
+
 ### user_agent
 
 ```
@@ -118,6 +141,57 @@ webview = FletWebviewAll(
     debugging_enabled=True
 )
 ```
+
+### background_color
+
+```
+background_color: Optional[ft.ColorValue] = None
+```
+
+Sets the native WebView canvas color before content is displayed, which is
+useful for avoiding a white flash in dark applications.
+
+```python
+webview = FletWebviewAll(background_color=ft.Colors.BLUE_GREY_900)
+```
+
+## Events
+
+| Handler | Event fields | Description |
+| --- | --- | --- |
+| `on_page_started` | `url` | A page has started loading. |
+| `on_page_finished` | `url` | A page has completed loading. |
+| `on_progress` | `progress` | Page progress from 0 to 100. |
+| `on_web_resource_error` | `domain`, `description`, `error_code`, `error_type`, `is_for_main_frame` | A resource could not be loaded. |
+| `on_navigation_request` | `url`, `is_main_frame` | A navigation request was observed. |
+| `on_javascript_message` | `channel_name`, `message_body` | A registered JavaScript channel posted a message. |
+
+`on_navigation_request` is a notification. Since Flet control events are
+asynchronous, its Python handler cannot return an immediate navigation decision.
+Use `allow_navigation=False` to block navigations (except the initial URL) or
+set that property before navigation begins.
+
+## Controller methods
+
+The following coroutines are available once the control is on a page:
+
+```python
+await webview.reload()
+await webview.stop_loading()  # browser-standard window.stop(), best effort
+await webview.go_back()
+await webview.go_forward()
+can_go_back = await webview.can_go_back()
+can_go_forward = await webview.can_go_forward()
+await webview.clear_cache()
+cookies_were_cleared = await webview.clear_cookies()
+url = await webview.get_current_url()
+await webview.run_javascript("document.body.dataset.ready = 'true'")
+value = await webview.run_javascript_returning_result("document.title")
+```
+
+`clear_cookies()` clears the cookie store shared by application WebViews.
+`stop_loading()` is best effort because `webview_all` does not expose a native
+stop-loading API.
 
 ### remote_debugging_port
 

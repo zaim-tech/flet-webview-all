@@ -7,21 +7,41 @@ import 'webview_environment.dart';
 
 /// Build a WebView widget for mobile and desktop platforms.
 Widget buildWebviewWidget({
+  required WebViewController controller,
   required String initialContent,
   required bool javascriptEnabled,
+  required dynamic javascriptMode,
   required bool allowNavigation,
   required bool debuggingEnabled,
   String? userAgent,
   bool zoomEnabled = true,
+  Color? backgroundColor,
+  Set<String> javascriptChannels = const <String>{},
+  void Function(String url)? onPageStarted,
+  void Function(String url)? onPageFinished,
+  void Function(int progress)? onProgress,
+  void Function(WebResourceError error)? onWebResourceError,
+  bool Function(NavigationRequest request)? onNavigationRequest,
+  void Function(String channelName, String messageBody)? onJavaScriptMessage,
   int? remoteDebuggingPort,
 }) {
   final webview = _WebviewAllWidget(
+    controller: controller,
     initialContent: initialContent,
     javascriptEnabled: javascriptEnabled,
+    javascriptMode: javascriptMode,
     allowNavigation: allowNavigation,
     debuggingEnabled: debuggingEnabled,
     userAgent: userAgent,
     zoomEnabled: zoomEnabled,
+    backgroundColor: backgroundColor,
+    javascriptChannels: javascriptChannels,
+    onPageStarted: onPageStarted,
+    onPageFinished: onPageFinished,
+    onProgress: onProgress,
+    onWebResourceError: onWebResourceError,
+    onNavigationRequest: onNavigationRequest,
+    onJavaScriptMessage: onJavaScriptMessage,
   );
 
   if (remoteDebuggingPort == null ||
@@ -97,20 +117,41 @@ class _WebViewEnvironmentGateState extends State<_WebViewEnvironmentGate> {
 }
 
 class _WebviewAllWidget extends StatefulWidget {
+  final WebViewController controller;
   final String initialContent;
   final bool javascriptEnabled;
+  final dynamic javascriptMode;
   final bool allowNavigation;
   final bool debuggingEnabled;
   final String? userAgent;
   final bool zoomEnabled;
+  final Color? backgroundColor;
+  final Set<String> javascriptChannels;
+  final void Function(String url)? onPageStarted;
+  final void Function(String url)? onPageFinished;
+  final void Function(int progress)? onProgress;
+  final void Function(WebResourceError error)? onWebResourceError;
+  final bool Function(NavigationRequest request)? onNavigationRequest;
+  final void Function(String channelName, String messageBody)?
+      onJavaScriptMessage;
 
   const _WebviewAllWidget({
+    required this.controller,
     required this.initialContent,
     required this.javascriptEnabled,
+    required this.javascriptMode,
     required this.allowNavigation,
     required this.debuggingEnabled,
     required this.userAgent,
     required this.zoomEnabled,
+    required this.backgroundColor,
+    required this.javascriptChannels,
+    required this.onPageStarted,
+    required this.onPageFinished,
+    required this.onProgress,
+    required this.onWebResourceError,
+    required this.onNavigationRequest,
+    required this.onJavaScriptMessage,
   });
 
   @override
@@ -119,13 +160,13 @@ class _WebviewAllWidget extends StatefulWidget {
 
 class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
   late final WebViewController _controller;
+  final Set<String> _registeredJavaScriptChannels = <String>{};
 
   @override
   void initState() {
     super.initState();
-    _controller = WebViewController();
-    _configureController();
-    _loadContent(widget.initialContent);
+    _controller = widget.controller;
+    unawaited(_initialize());
   }
 
   @override
@@ -133,58 +174,110 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
     super.didUpdateWidget(oldWidget);
 
     if (oldWidget.javascriptEnabled != widget.javascriptEnabled ||
+        oldWidget.javascriptMode != widget.javascriptMode ||
         oldWidget.allowNavigation != widget.allowNavigation ||
         oldWidget.debuggingEnabled != widget.debuggingEnabled ||
         oldWidget.userAgent != widget.userAgent ||
-        oldWidget.zoomEnabled != widget.zoomEnabled) {
-      _configureController();
+        oldWidget.zoomEnabled != widget.zoomEnabled ||
+        oldWidget.backgroundColor != widget.backgroundColor ||
+        oldWidget.javascriptChannels != widget.javascriptChannels) {
+      unawaited(_configureController());
     }
 
     if (oldWidget.initialContent != widget.initialContent) {
-      _loadContent(widget.initialContent);
+      unawaited(_loadContent(widget.initialContent));
     }
   }
 
-  void _configureController() {
-    _controller
-      ..setJavaScriptMode(
-        widget.javascriptEnabled
-            ? JavaScriptMode.unrestricted
-            : JavaScriptMode.disabled,
-      )
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onNavigationRequest: (NavigationRequest request) {
-            if (widget.allowNavigation ||
-                (!_looksLikeHtml(widget.initialContent) &&
-                    request.url == widget.initialContent)) {
-              return NavigationDecision.navigate;
-            }
-            return NavigationDecision.prevent;
-          },
-        ),
-      )
-      ..enableZoom(widget.zoomEnabled);
+  Future<void> _initialize() async {
+    await _configureController();
+    await _loadContent(widget.initialContent);
+  }
+
+  Future<void> _configureController() async {
+    await _controller.setJavaScriptMode(_javascriptMode());
+    await _controller.setNavigationDelegate(
+      NavigationDelegate(
+        onNavigationRequest: (NavigationRequest request) {
+          final allowed = widget.onNavigationRequest?.call(request) ??
+              (widget.allowNavigation ||
+                  (!_looksLikeHtml(widget.initialContent) &&
+                      request.url == widget.initialContent));
+          if (allowed) {
+            return NavigationDecision.navigate;
+          }
+          return NavigationDecision.prevent;
+        },
+        onPageStarted: widget.onPageStarted,
+        onPageFinished: widget.onPageFinished,
+        onProgress: widget.onProgress,
+        onWebResourceError: widget.onWebResourceError,
+      ),
+    );
+    await _controller.enableZoom(widget.zoomEnabled);
+    await _syncJavaScriptChannels();
 
     if (widget.debuggingEnabled) {
-      _controller.setOnConsoleMessage((JavaScriptConsoleMessage message) {
+      await _controller.setOnConsoleMessage((JavaScriptConsoleMessage message) {
         debugPrint("FletWebviewAll console: ${message.message}");
       });
     }
 
     final userAgent = widget.userAgent;
     if (userAgent != null && userAgent.isNotEmpty) {
-      _controller.setUserAgent(userAgent);
+      await _controller.setUserAgent(userAgent);
+    }
+
+    final backgroundColor = widget.backgroundColor;
+    if (backgroundColor != null) {
+      await _controller.setBackgroundColor(backgroundColor);
     }
   }
 
-  void _loadContent(String content) {
+  JavaScriptMode _javascriptMode() {
+    final mode = widget.javascriptMode;
+    if (mode is bool) {
+      return mode ? JavaScriptMode.unrestricted : JavaScriptMode.disabled;
+    }
+    if (mode is String && mode.toLowerCase() == 'disabled') {
+      return JavaScriptMode.disabled;
+    }
+    return widget.javascriptEnabled
+        ? JavaScriptMode.unrestricted
+        : JavaScriptMode.disabled;
+  }
+
+  Future<void> _syncJavaScriptChannels() async {
+    final removed = _registeredJavaScriptChannels.difference(
+      widget.javascriptChannels,
+    );
+    for (final channel in removed) {
+      await _controller.removeJavaScriptChannel(channel);
+      _registeredJavaScriptChannels.remove(channel);
+    }
+    final added = widget.javascriptChannels.difference(
+      _registeredJavaScriptChannels,
+    );
+    for (final channel in added) {
+      if (channel.trim().isEmpty) {
+        continue;
+      }
+      await _controller.addJavaScriptChannel(
+        channel,
+        onMessageReceived: (message) {
+          widget.onJavaScriptMessage?.call(channel, message.message);
+        },
+      );
+      _registeredJavaScriptChannels.add(channel);
+    }
+  }
+
+  Future<void> _loadContent(String content) {
     if (_looksLikeHtml(content)) {
-      _controller.loadHtmlString(content);
-      return;
+      return _controller.loadHtmlString(content);
     }
 
-    _controller.loadRequest(Uri.parse(content));
+    return _controller.loadRequest(Uri.parse(content));
   }
 
   bool _looksLikeHtml(String content) {
