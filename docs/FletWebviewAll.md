@@ -119,6 +119,27 @@ webview = FletWebviewAll(
 )
 ```
 
+### remote_debugging_port
+
+```
+remote_debugging_port: Optional[int] = None
+```
+
+Windows-only, startup-time WebView2 CDP port for attaching tools such as
+Playwright to the visible WebView. The value must be between 1 and 65535 and
+must be set on the first WebView. WebView2 shares one environment per process,
+so later controls that explicitly set a port must use the same value.
+
+```python
+webview = FletWebviewAll(
+    url="https://www.example.com",
+    remote_debugging_port=9222,
+)
+```
+
+Remote debugging is for development and test automation only. Leave the value
+as `None` in production.
+
 ## Inherited Properties
 
 As `FletWebviewAll` extends `LayoutControl`, it inherits the following categories of properties:
@@ -296,6 +317,7 @@ ft.run(main)
 - Requires Windows 10 or higher
 - WebView2 must be installed on the system
 - Full JavaScript support
+- Supports Playwright attachment through `remote_debugging_port`
 
 ### Web
 - Uses iframe for embedding

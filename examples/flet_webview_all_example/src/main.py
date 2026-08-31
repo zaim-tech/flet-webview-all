@@ -1,3 +1,5 @@
+import os
+
 import flet as ft
 from flet_webview_all import FletWebviewAll
 
@@ -22,6 +24,8 @@ DEFAULT_HTML = """
 </body>
 </html>
 """
+
+REMOTE_DEBUGGING_PORT = os.getenv("FLET_WEBVIEW_ALL_REMOTE_DEBUGGING_PORT")
 
 
 def main(page: ft.Page):
@@ -96,6 +100,9 @@ def main(page: ft.Page):
         allow_navigation=allow_nav_switch.value,
         zoom_enabled=zoom_switch.value,
         javascript_enabled=js_switch.value,
+        remote_debugging_port=(
+            int(REMOTE_DEBUGGING_PORT) if REMOTE_DEBUGGING_PORT else None
+        ),
         expand=True,
     )
 

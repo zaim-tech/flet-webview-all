@@ -16,6 +16,7 @@ FletWebviewAll is a Flet extension that integrates the `webview_all` Flutter pac
 - **Zoom Support**: Built-in zoom controls for user convenience
 - **Custom User Agent**: Set custom user agent strings
 - **Debug Support**: Enable debugging for development and troubleshooting
+- **Playwright on Windows**: Attach to the visible WebView2 through a local CDP port
 
 ## Installation
 
@@ -92,6 +93,11 @@ ft.run(main)
 - **Type**: `bool`
 - **Default**: `False`
 - **Description**: Enable debugging for development purposes.
+
+### remote_debugging_port
+- **Type**: `Optional[int]`
+- **Default**: `None`
+- **Description**: Windows-only, startup-time WebView2 CDP port (`1..65535`) for Playwright attachment. Use only for development and testing.
 
 ## Layout Properties
 

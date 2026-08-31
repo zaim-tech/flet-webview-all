@@ -84,6 +84,52 @@ page.add(
 | `javascript_enabled` | `bool` | `True` | Enables unrestricted JavaScript execution. |
 | `user_agent` | `str \| None` | `None` | Overrides the WebView user-agent when provided. |
 | `debugging_enabled` | `bool` | `False` | Prints JavaScript console messages through Flutter's debug logger. |
+| `remote_debugging_port` | `int \| None` | `None` | Windows-only, startup-time WebView2 CDP port (`1..65535`) for attaching Playwright to the visible WebView. |
+
+### Playwright on Windows
+
+On Windows, set `remote_debugging_port` on the first WebView. WebView2 uses one shared browser environment per process, so later WebViews inherit the same CDP endpoint. Any later control that explicitly specifies a port must use the same value. Changing the property after startup requires restarting the application.
+
+Remote debugging is intended for development and test automation. The CDP endpoint has no application-level authentication and can inspect every WebView in the shared environment, so leave `remote_debugging_port=None` in production.
+
+```python
+webview = FletWebviewAll(
+    url="https://example.com",
+    remote_debugging_port=9222,
+    expand=True,
+)
+page.add(webview)
+```
+
+Playwright can then attach to the exact WebView2 instance shown inside Flet:
+
+```python
+from playwright.async_api import async_playwright
+
+async def attach():
+    playwright = await async_playwright().start()
+    browser = await playwright.chromium.connect_over_cdp(
+        "http://127.0.0.1:9222"
+    )
+
+    pages = [
+        page
+        for context in browser.contexts
+        for page in context.pages
+    ]
+    for page in pages:
+        print(page.url)
+
+    page = next(
+        page for page in pages
+        if page.url.startswith("https://example.com")
+    )
+    print(await page.title())
+```
+
+Before connecting, `http://127.0.0.1:9222/json/list` should list the WebView2 page target.
+
+If another WebView2 controller is created before the control that specifies `remote_debugging_port`, WebView2 may already have initialized its shared environment and the port can no longer be enabled without restarting the application.
 
 Use `page.update()` after changing a control property at runtime:
 

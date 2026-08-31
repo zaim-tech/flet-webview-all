@@ -25,7 +25,12 @@ Repository = "https://github.com/MyGithubAccount/flet-webview-all"
 Issues = "https://github.com/MyGithubAccount/flet-webview-all/issues"
 
 [tool.setuptools.package-data]
-"flutter.flet_webview_all" = ["**/*"]
+"flutter.flet_webview_all" = [
+    "pubspec.yaml",
+    "pubspec.lock",
+    "lib/*.dart",
+    "lib/**/*.dart",
+]
 
 [tool.setuptools]
 license-files = []

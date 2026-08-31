@@ -8,6 +8,7 @@ Widget buildWebviewWidget({
   required bool debuggingEnabled,
   String? userAgent,
   bool zoomEnabled = true,
+  int? remoteDebuggingPort,
 }) {
   // Extract URL from initialContent for display
   String? displayUrl;
