@@ -1,34 +1,24 @@
-name: Deploy Documentation
-
+name: FletWebviewAll docs 
 on:
   push:
     branches:
-      - main  
-  workflow_dispatch:  
-
-permissions:
-  contents: write
+      - main
 
 jobs:
-  deploy:
+  build:
+    name: Deploy docs
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Checkout main
+        uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-
-      - name: Install dependencies
-        run: |
-          pip install mkdocs mkdocs-material "mkdocstrings[python]"
-          # Install your local package if mkdocstrings needs to import your module:
-          # pip install -e .
-
-      - name: Build and deploy to GitHub Pages
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          mkdocs gh-deploy --force
+      - name: Deploy docs
+        uses: mhausenblas/mkdocs-deploy-gh-pages@master
+        
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CUSTOM_DOMAIN: optionaldomain.com
+          CONFIG_FILE: folder/mkdocs.yml
+          EXTRA_PACKAGES: build-base
+          
+          REQUIREMENTS: folder/requirements.txt
