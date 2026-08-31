@@ -44,4 +44,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         run: |
-          uv run --group docs --group lint mkdocs gh-deploy --force -v
+          uv run --extra docs --extra lint mkdocs gh-deploy --force -v
