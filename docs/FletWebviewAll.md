@@ -168,7 +168,7 @@ As `FletWebviewAll` extends `LayoutControl`, it inherits the following categorie
 - `on_focus` - Handle focus events
 - `on_blur` - Handle blur events
 
-For complete list and details, see [LayoutControl documentation](https://flet.dev/docs/reference/controls/layoutcontrol).
+For complete list and details, see [LayoutControl documentation](https://flet.dev/docs/controls/layoutcontrol/).
 
 ## Examples
 
