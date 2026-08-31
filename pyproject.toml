@@ -20,9 +20,10 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/zaim-tech/flet-webview-all"
-Documentation = "https://github.com/zaim-tech/flet-webview-all"
+Documentation = "https://zaim-tech.github.io/flet-webview-all/"
 Repository = "https://github.com/zaim-tech/flet-webview-all"
 Issues = "https://github.com/zaim-tech/flet-webview-all/issues"
+PyPI = "https://pypi.org/project/flet-webview-all/"
 
 [tool.setuptools.package-data]
 "flutter.flet_webview_all" = [

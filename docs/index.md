@@ -2,6 +2,15 @@
 
 A unified webview control for the Flet framework that provides cross-platform web content display.
 
+!!! important "Start here"
+    Read the [Complete API guide](FletWebviewAll.md) for a full application,
+    callback examples, JavaScript bridge usage, controller methods, Windows
+    debugging, and platform notes.
+
+**Project:** [GitHub repository](https://github.com/zaim-tech/flet-webview-all) ·
+**Install:** [PyPI package](https://pypi.org/project/flet-webview-all/) ·
+**Issues:** [GitHub Issues](https://github.com/zaim-tech/flet-webview-all/issues)
+
 ## Overview
 
 FletWebviewAll is a Flet extension that integrates the `webview_all` Flutter package, enabling you to display web content directly within your Flet applications. This control works seamlessly across Android, iOS, macOS, Windows, and Web platforms.

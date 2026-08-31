@@ -1,4 +1,12 @@
 site_name: FletWebviewAll
+site_url: https://zaim-tech.github.io/flet-webview-all/
+repo_url: https://github.com/zaim-tech/flet-webview-all
+repo_name: zaim-tech/flet-webview-all
+site_description: Cross-platform WebView control for Flet
+
+nav:
+  - Home: index.md
+  - Complete API guide: FletWebviewAll.md
 
 theme:
   name: "material"

@@ -2,6 +2,12 @@
 
 `flet-webview-all` is a Flet extension that embeds web content in a Flet application. It wraps [`webview_all`](https://pub.dev/packages/webview_all), a Flutter WebView implementation with support for Android, iOS, Linux, macOS, Windows, and the web.
 
+[![PyPI](https://img.shields.io/pypi/v/flet-webview-all)](https://pypi.org/project/flet-webview-all/)
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://zaim-tech.github.io/flet-webview-all/)
+[![Repository](https://img.shields.io/badge/source-GitHub-181717)](https://github.com/zaim-tech/flet-webview-all)
+
+See the [complete API guide](https://zaim-tech.github.io/flet-webview-all/FletWebviewAll/) for a full application and examples of every property, event, JavaScript bridge, and controller method.
+
 The control is a `ft.LayoutControl`, so it can use Flet layout properties such as `expand`, `width`, `height`, and `visible`.
 
 ## Installation

@@ -428,3 +428,252 @@ ft.run(main)
 - [Flet Documentation](https://flet.dev)
 - [webview_all Package](https://pub.dev/packages/webview_all)
 - [Flutter WebView](https://pub.dev/packages/webview_flutter)
+
+## Complete application example
+
+The following application demonstrates URL and HTML loading, every lifecycle
+callback, the JavaScript bridge, history controls, runtime settings, and the
+JavaScript controller methods. Save it as `main.py`, install
+`flet-webview-all`, and run it with `flet run main.py`.
+
+```python
+import flet as ft
+from flet_webview_all import FletWebviewAll
+
+
+HTML = """<!doctype html>
+<html><head><title>Bridge demo</title></head>
+<body>
+  <h1>FletWebviewAll</h1>
+  <button onclick="FletBridge.postMessage('Button clicked')">
+    Send message to Flet
+  </button>
+</body></html>"""
+
+
+def main(page: ft.Page):
+    page.title = "WebView controller demo"
+    page.padding = 0
+
+    address = ft.TextField(value="https://example.com", expand=True)
+    status = ft.Text("Ready")
+    progress = ft.ProgressBar(value=0, expand=True)
+    webview = FletWebviewAll(expand=True)
+
+    def set_status(value):
+        status.value = value
+        page.update()
+
+    def load_url(_):
+        value = (address.value or "").strip()
+        if value and not value.startswith(("http://", "https://")):
+            value = "https://" + value
+        if value:
+            webview.url, webview.html = value, None
+            page.update()
+
+    def load_html(_):
+        webview.url, webview.html = None, HTML
+        page.update()
+
+    async def back(_):
+        if await webview.can_go_back():
+            await webview.go_back()
+
+    async def forward(_):
+        if await webview.can_go_forward():
+            await webview.go_forward()
+
+    async def reload(_):
+        await webview.reload()
+
+    async def read_title(_):
+        title = await webview.run_javascript_returning_result("document.title")
+        set_status(f"Title: {title}")
+
+    async def clear_browser_data(_):
+        await webview.clear_cache()
+        await webview.clear_cookies()
+        set_status("Cache and cookies cleared")
+
+    def on_started(e):
+        progress.value = 0
+        set_status(f"Started: {e.url}")
+
+    def on_finished(e):
+        progress.value = 1
+        set_status(f"Finished: {e.url}")
+
+    def on_progress(e):
+        progress.value = e.progress / 100
+        page.update()
+
+    def on_error(e):
+        set_status(f"Error {e.error_code}: {e.description}")
+
+    def on_message(e):
+        set_status(f"JavaScript [{e.channel_name}]: {e.message_body}")
+
+    webview.url = address.value
+    webview.javascript_channels = ["FletBridge"]
+    webview.on_page_started = on_started
+    webview.on_page_finished = on_finished
+    webview.on_progress = on_progress
+    webview.on_web_resource_error = on_error
+    webview.on_javascript_message = on_message
+
+    page.add(
+        ft.Column(
+            [
+                ft.Row([
+                    address,
+                    ft.Button("Load", on_click=load_url),
+                    ft.Button("HTML", on_click=load_html),
+                ]),
+                ft.Row([
+                    ft.IconButton(ft.Icons.ARROW_BACK, on_click=back),
+                    ft.IconButton(ft.Icons.ARROW_FORWARD, on_click=forward),
+                    ft.IconButton(ft.Icons.REFRESH, on_click=reload),
+                    ft.Button("Read title", on_click=read_title),
+                    ft.Button("Clear data", on_click=clear_browser_data),
+                ]),
+                ft.Row([progress, status]),
+                webview,
+            ],
+            expand=True,
+        )
+    )
+
+
+ft.run(main)
+```
+
+## Property-by-property examples
+
+### `url` and `html`
+
+Set `url` for a remote/local document. Set `html` for an inline document. If
+both are set, `url` wins. To switch modes at runtime, set the unused property to
+`None` and call `page.update()`.
+
+```python
+webview = FletWebviewAll(url="https://flet.dev", expand=True)
+webview.url, webview.html = None, "<html><body><h1>Offline</h1></body></html>"
+page.update()
+```
+
+### Navigation and zoom
+
+```python
+webview = FletWebviewAll(
+    url="https://example.com",
+    allow_navigation=False,  # only the initial URL is allowed
+    zoom_enabled=True,
+)
+```
+
+### JavaScript settings
+
+```python
+FletWebviewAll(javascript_enabled=False)
+FletWebviewAll(javascript_mode="disabled")
+FletWebviewAll(javascript_mode="unrestricted")
+```
+
+`javascript_mode` takes precedence when supplied. Use the explicit mode when
+you want configuration to be self-documenting.
+
+### User agent and background
+
+```python
+FletWebviewAll(
+    user_agent="MyCompanyHelpDesk/2.0",
+    background_color=ft.Colors.BLACK,
+)
+```
+
+### Windows remote debugging
+
+Set the port before the first WebView is created. WebView2 shares one browser
+environment per process.
+
+```powershell
+$env:FLET_WEBVIEW_ALL_REMOTE_DEBUGGING_PORT = "9222"
+flet run main.py
+```
+
+```python
+import os
+FletWebviewAll(
+    url="https://example.com",
+    remote_debugging_port=int(os.environ["FLET_WEBVIEW_ALL_REMOTE_DEBUGGING_PORT"]),
+)
+```
+
+Use Playwright with `chromium.connect_over_cdp("http://127.0.0.1:9222")`.
+Never enable this option in production.
+
+## Callback examples
+
+```python
+def started(e):
+    print("Loading", e.url)
+
+def finished(e):
+    print("Loaded", e.url)
+
+def progress_changed(e):
+    print(f"Progress: {e.progress}%")
+
+def resource_failed(e):
+    print(e.domain, e.error_code, e.description, e.is_for_main_frame)
+
+def navigation_requested(e):
+    print("Requested", e.url, "main frame:", e.is_main_frame)
+
+def javascript_message(e):
+    print(e.channel_name, e.message_body)
+
+webview = FletWebviewAll(
+    url="https://example.com",
+    on_page_started=started,
+    on_page_finished=finished,
+    on_progress=progress_changed,
+    on_web_resource_error=resource_failed,
+    on_navigation_request=navigation_requested,
+    javascript_channels=["FletBridge"],
+    on_javascript_message=javascript_message,
+)
+```
+
+The navigation callback is observational. Use `allow_navigation` to enforce a
+policy; changing it from the callback is asynchronous and cannot affect the
+already pending native decision.
+
+## Controller method examples
+
+```python
+async def browser_actions(_):
+    if await webview.can_go_back():
+        await webview.go_back()
+    if await webview.can_go_forward():
+        await webview.go_forward()
+    await webview.reload()
+    await webview.stop_loading()  # best effort: window.stop()
+    await webview.run_javascript("document.body.style.zoom = '110%'")
+    result = await webview.run_javascript_returning_result("document.title")
+    current = await webview.get_current_url()
+    await webview.clear_cache()
+    cookies_removed = await webview.clear_cookies()
+    print(result, current, cookies_removed)
+```
+
+All methods are asynchronous and require the control to have been added to a
+page. `clear_cookies()` affects the application-wide WebView cookie store.
+
+## Project links
+
+- Source repository: [github.com/zaim-tech/flet-webview-all](https://github.com/zaim-tech/flet-webview-all)
+- Issues and feature requests: [GitHub Issues](https://github.com/zaim-tech/flet-webview-all/issues)
+- Published package: [PyPI: flet-webview-all](https://pypi.org/project/flet-webview-all/)
+- Underlying Flutter package: [webview_all on pub.dev](https://pub.dev/packages/webview_all)
