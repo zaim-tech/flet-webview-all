@@ -1,0 +1,47 @@
+name: docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'LICENSE'      
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - 'pyproject.toml'
+      - '.github/workflows/deploy.yml'
+      - 'src/flet_webview_all/**'
+      - 'examples/flet_webview_all_example/src/**'
+
+  workflow_dispatch:    # Allow manual trigger from the GitHub Actions UI
+
+concurrency:
+  group: "docs"                   # Prevent multiple overlapping deploys
+  cancel-in-progress: false       # Allow in-progress deploys to finish
+
+permissions:
+  contents: write  # Required to push to the gh-pages branch
+
+env:
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}         # used by mkdocs for publishing
+
+jobs:
+  deploy:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    if: github.repository == github.event.repository.full_name  # don't run on forks
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Configure Git for mkdocs
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: Deploy to GitHub Pages
+        run: |
+          uv run --group docs --group lint mkdocs gh-deploy --force -v
