@@ -21,53 +21,24 @@ These methods raise an unsupported-platform error outside Windows. For
 automation, `remote_debugging_port` is usually preferable because it
 exposes a stable CDP endpoint to Playwright.
 
-The underlying Flutter controller also supports opening DevTools when
-writing a custom Flutter extension:
-
-```dart
-final windows = controller.platform as WindowsWebViewController;
-await windows.openDevTools();
-final version = await WindowsWebViewController.getWebViewVersion();
-debugPrint('WebView2 runtime: $version');
-```
-
 ## Android
 
-```dart
-await AndroidWebViewController.enableDebugging(true);
-```
-
-Inspect the Android WebView with Chrome or Edge remote debugging tools.
+Use the platform's WebView inspection tools (for example, Chrome or Edge
+remote debugging) when supported by the device and OS.
 
 ## iOS and macOS
 
-```dart
-final webKit = controller.platform as WebKitWebViewController;
-await webKit.setInspectable(true);
-```
-
-Availability depends on the OS version and developer settings.
+WebKit inspection availability depends on the OS version and developer
+settings. Enable inspection using the device's normal development settings.
 
 ## Linux
 
-```dart
-final linux = controller.platform as LinuxWebViewController;
-await linux.setDeveloperExtrasEnabled(true);
-await linux.openDevTools();
-```
-
-You can also set `developerExtrasEnabled` in
-`LinuxWebViewControllerCreationParams` when constructing a custom
-controller.
+Use the WebKitGTK inspector supplied by the Linux runtime when available.
 
 ## OHOS and Web
 
-```dart
-await OhosWebViewController.enableDebugging(true);
-```
-
-On Web, use browser DevTools. The control is rendered in an iframe;
-browser same-origin rules apply.
+Use the browser or device developer tools supplied by the target platform. On
+Web, the control is rendered in an iframe and browser same-origin rules apply.
 
 For console output specifically (rather than full DevTools), see
 [Console capture](console.md).

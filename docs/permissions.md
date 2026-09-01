@@ -104,14 +104,9 @@ page generally must be served from a secure (`https`) origin.
 
 ## Geolocation, file selectors, and fullscreen
 
-The detailed geolocation prompt, Android/OHOS file selector, and custom
-fullscreen widget callbacks are platform-native APIs from `webview_all`. They
-are not exposed as portable Flet properties because their callback signatures
-and permission objects differ by platform. Add those callbacks in a custom
-Flutter extension when you need them, following the upstream documentation:
-
-- [webview_all permissions guide](https://abandoft.github.io/webview_all/guides/permissions/)
-- [webview_all common API](https://abandoft.github.io/webview_all/reference/common-api/)
+The detailed geolocation prompt, file selector, and custom fullscreen widget
+callbacks are platform-native APIs and are not exposed as portable Flet
+properties. They are outside the Python control API.
 
 This extension's portable permission surface intentionally covers camera and
 microphone approval plus safe default denial across supported platforms.

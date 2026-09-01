@@ -61,64 +61,29 @@ These methods raise an unsupported-platform error outside Windows. For
 automation, `remote_debugging_port` is usually preferable because it exposes a
 stable CDP endpoint to Playwright.
 
-The underlying Flutter controller also supports opening DevTools when writing
-a custom Flutter extension:
-
-```dart
-final windows = controller.platform as WindowsWebViewController;
-await windows.openDevTools();
-final version = await WindowsWebViewController.getWebViewVersion();
-debugPrint('WebView2 runtime: $version');
-```
-
 ### Android
 
-```dart
-await AndroidWebViewController.enableDebugging(true);
-```
-
-Inspect the Android WebView with Chrome or Edge remote debugging tools.
+Use the platform's WebView inspection tools (for example, Chrome or Edge
+remote debugging) when supported by the device and OS.
 
 ### iOS and macOS
 
-```dart
-final webKit = controller.platform as WebKitWebViewController;
-await webKit.setInspectable(true);
-```
-
-Availability depends on the OS version and developer settings.
+WebKit inspection availability depends on the OS version and developer
+settings. Enable inspection using the device's normal development settings.
 
 ### Linux
 
-```dart
-final linux = controller.platform as LinuxWebViewController;
-await linux.setDeveloperExtrasEnabled(true);
-await linux.openDevTools();
-```
-
-You can also set `developerExtrasEnabled` in
-`LinuxWebViewControllerCreationParams` when constructing a custom controller.
+Use the WebKitGTK inspector supplied by the Linux runtime when available.
 
 ### OHOS and Web
 
-```dart
-await OhosWebViewController.enableDebugging(true);
-```
-
-On Web, use browser DevTools. The control is rendered in an iframe; browser
-same-origin rules apply.
+Use the browser or device developer tools supplied by the target platform. On
+Web, the control is rendered in an iframe and browser same-origin rules apply.
 
 ## Console capture
 
 Set `debugging_enabled=True` on the Flet control to forward page console
-messages to the Flutter debug logger. For a custom Flutter extension, the
-underlying callback is:
-
-```dart
-await controller.setOnConsoleMessage((message) {
-  debugPrint('[${message.level.name}] ${message.message}');
-});
-```
+messages to the platform debug log.
 
 Avoid uploading page content or sensitive console values without user consent.
 
@@ -134,9 +99,9 @@ webview = FletWebviewAll(
 )
 ```
 
-`debugging_enabled=True` continues to print messages through the Flutter debug
-logger; `on_console_message` is useful when the Python app needs to display or
-record them.
+`debugging_enabled=True` continues to print messages through the platform
+debug log; `on_console_message` is useful when the Python app needs to display
+or record them.
 
 On Web, cross-origin iframe content cannot be scripted by the host. APIs such
 as JavaScript evaluation, channels, console hooks, and scroll reads/writes

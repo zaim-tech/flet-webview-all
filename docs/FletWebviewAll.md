@@ -835,8 +835,9 @@ page.update()
 
 !!! note "If a setting appears unchanged"
     `zoom_enabled` and JavaScript mode are native WebView settings. After
-    changing Dart code or the Flutter dependency, stop the app and rebuild the
-    extension (`flet build windows -v`, or the target platform you are testing).
+    changing the native extension implementation or dependency, stop the app
+    and rebuild the extension (`flet build windows -v`, or the target platform
+    you are testing).
     A plain `flet run` can use an already-built extension bundle. For a Python
     property change, `page.update()` is sufficient.
 

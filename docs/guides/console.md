@@ -1,14 +1,7 @@
 # Console capture
 
 Set `debugging_enabled=True` on the Flet control to forward page console
-messages to the Flutter debug logger. For a custom Flutter extension, the
-underlying callback is:
-
-```dart
-await controller.setOnConsoleMessage((message) {
-  debugPrint('[${message.level.name}] ${message.message}');
-});
-```
+messages to the platform debug log.
 
 !!! warning
     Avoid uploading page content or sensitive console values without user
@@ -28,9 +21,9 @@ webview = FletWebviewAll(
 )
 ```
 
-`debugging_enabled=True` continues to print messages through the Flutter
-debug logger; `on_console_message` is useful when the Python app needs to
-display or record them.
+`debugging_enabled=True` continues to print messages through the platform
+debug log; `on_console_message` is useful when the Python app needs to display
+or record them.
 
 ## Web platform limits
 

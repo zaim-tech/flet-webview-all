@@ -263,7 +263,9 @@ Platform WebView engines can differ in their capabilities. Test the settings you
 
 ## Build the example
 
-Flet extensions include Python and Flutter code. After changing the Flutter package, rebuild the example application; Python-only changes can be run without rebuilding once the extension has been built for the target platform.
+After changing the extension or its native dependencies, rebuild the example
+application. Python-only changes can be run without rebuilding once the
+extension has been built for the target platform.
 
 ```bash
 cd examples/flet_webview_all_example
@@ -284,18 +286,12 @@ The project follows Flet's extension structure:
 
 ```text
 src/flet_webview_all/                  Python control
-src/flutter/flet_webview_all/          Flutter extension and webview_all dependency
+src/flutter/flet_webview_all/          Native extension implementation
 examples/flet_webview_all_example/     Sample Flet application
 docs/                                  Additional documentation
 
 ```
 
-To add or update the Flutter dependency, work from the Flutter package directory:
-
-```bash
-cd src/flutter/flet_webview_all
-flutter pub get
-```
 ## ⚠️ Important Note
 
 When running your app without building the extension using flet build ..., you will see an error box instead of the actual webview widget.
