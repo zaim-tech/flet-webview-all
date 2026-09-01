@@ -8,6 +8,8 @@
 
 See the [complete API guide](https://zaim-tech.github.io/flet-webview-all/FletWebviewAll/) for a full application and examples of every property, event, JavaScript bridge, and controller method.
 
+For automated multi-platform builds, see the [GitHub Actions build guide](https://zaim-tech.github.io/flet-webview-all/guides/github-actions/).
+
 The control is a `ft.LayoutControl`, so it can use Flet layout properties such as `expand`, `width`, `height`, and `visible`.
 
 ## Installation
