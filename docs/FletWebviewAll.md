@@ -155,6 +155,17 @@ useful for avoiding a white flash in dark applications.
 webview = FletWebviewAll(background_color=ft.Colors.BLUE_GREY_900)
 ```
 
+### allow_webview_permissions
+
+```
+allow_webview_permissions: bool = False
+```
+
+Controls the WebView layer of camera/microphone permission requests. Request
+the operating-system permission first with
+[`flet-permission-handler`](permissions.md), then enable this flag only for a
+trusted page. Requests are denied by default.
+
 ## Events
 
 | Handler | Event fields | Description |
@@ -165,6 +176,9 @@ webview = FletWebviewAll(background_color=ft.Colors.BLUE_GREY_900)
 | `on_web_resource_error` | `domain`, `description`, `error_code`, `error_type`, `is_for_main_frame` | A resource could not be loaded. |
 | `on_navigation_request` | `url`, `is_main_frame` | A navigation request was observed. |
 | `on_javascript_message` | `channel_name`, `message_body` | A registered JavaScript channel posted a message. |
+| `on_permission_request` | `resource_types` | A page requested protected WebView resources. |
+| `on_scroll_position_change` | `x`, `y` | The document scroll position changed. |
+| `on_console_message` | `level`, `message` | A page wrote to the JavaScript console. |
 
 `on_navigation_request` is a notification. Since Flet control events are
 asynchronous, its Python handler cannot return an immediate navigation decision.
@@ -187,6 +201,13 @@ cookies_were_cleared = await webview.clear_cookies()
 url = await webview.get_current_url()
 await webview.run_javascript("document.body.dataset.ready = 'true'")
 value = await webview.run_javascript_returning_result("document.title")
+await webview.scroll_to(0, 0)
+await webview.scroll_by(0, 300)
+position = await webview.get_scroll_position()
+if await webview.supports_set_scrollbars_enabled():
+await webview.set_vertical_scrollbar_enabled(False)
+await webview.open_devtools()  # Windows/WebView2 only
+version = await webview.get_webview_version()  # Windows/WebView2 only
 ```
 
 `clear_cookies()` clears the cookie store shared by application WebViews.
@@ -811,6 +832,20 @@ webview.allow_navigation = False
 webview.user_agent = "MyApp/1.0"
 page.update()
 ```
+
+!!! note "If a setting appears unchanged"
+    `zoom_enabled` and JavaScript mode are native WebView settings. After
+    changing Dart code or the Flutter dependency, stop the app and rebuild the
+    extension (`flet build windows -v`, or the target platform you are testing).
+    A plain `flet run` can use an already-built extension bundle. For a Python
+    property change, `page.update()` is sufficient.
+
+    `zoom_enabled=False` disables the WebView's native zoom controls. It does
+    not prevent a page from applying CSS zoom or JavaScript that changes its
+    own scale. `javascript_mode="disabled"` prevents WebView JavaScript
+    execution; it does not disable JavaScript in the browser hosting the Flet
+    app itself. Reload the page after changing modes if the document was
+    already running scripts.
 
 ## More practical recipes
 

@@ -23,6 +23,8 @@ Widget buildWebviewWidget({
   void Function(WebResourceError error)? onWebResourceError,
   bool Function(NavigationRequest request)? onNavigationRequest,
   void Function(String channelName, String messageBody)? onJavaScriptMessage,
+  void Function(int x, int y)? onScrollPositionChange,
+  void Function(JavaScriptConsoleMessage message)? onConsoleMessage,
   int? remoteDebuggingPort,
 }) {
   final webview = _WebviewAllWidget(
@@ -42,6 +44,8 @@ Widget buildWebviewWidget({
     onWebResourceError: onWebResourceError,
     onNavigationRequest: onNavigationRequest,
     onJavaScriptMessage: onJavaScriptMessage,
+    onScrollPositionChange: onScrollPositionChange,
+    onConsoleMessage: onConsoleMessage,
   );
 
   if (remoteDebuggingPort == null ||
@@ -134,6 +138,8 @@ class _WebviewAllWidget extends StatefulWidget {
   final bool Function(NavigationRequest request)? onNavigationRequest;
   final void Function(String channelName, String messageBody)?
       onJavaScriptMessage;
+  final void Function(int x, int y)? onScrollPositionChange;
+  final void Function(JavaScriptConsoleMessage message)? onConsoleMessage;
 
   const _WebviewAllWidget({
     required this.controller,
@@ -152,6 +158,8 @@ class _WebviewAllWidget extends StatefulWidget {
     required this.onWebResourceError,
     required this.onNavigationRequest,
     required this.onJavaScriptMessage,
+    required this.onScrollPositionChange,
+    required this.onConsoleMessage,
   });
 
   @override
@@ -215,11 +223,17 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
       ),
     );
     await _controller.enableZoom(widget.zoomEnabled);
+    await _controller.setOnScrollPositionChange((change) {
+      widget.onScrollPositionChange?.call(change.x.round(), change.y.round());
+    });
     await _syncJavaScriptChannels();
 
-    if (widget.debuggingEnabled) {
+    if (widget.debuggingEnabled || widget.onConsoleMessage != null) {
       await _controller.setOnConsoleMessage((JavaScriptConsoleMessage message) {
-        debugPrint("FletWebviewAll console: ${message.message}");
+        if (widget.debuggingEnabled) {
+          debugPrint("FletWebviewAll console: ${message.message}");
+        }
+        widget.onConsoleMessage?.call(message);
       });
     }
 

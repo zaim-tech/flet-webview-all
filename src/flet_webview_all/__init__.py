@@ -5,6 +5,9 @@ from flet_webview_all.flet_webview_all import (
     WebViewPageEvent,
     WebViewProgressEvent,
     WebViewResourceErrorEvent,
+    WebViewPermissionRequestEvent,
+    WebViewScrollEvent,
+    WebViewConsoleMessageEvent,
 )
 
 __all__ = [
@@ -14,4 +17,7 @@ __all__ = [
     "WebViewPageEvent",
     "WebViewProgressEvent",
     "WebViewResourceErrorEvent",
+    "WebViewPermissionRequestEvent",
+    "WebViewScrollEvent",
+    "WebViewConsoleMessageEvent",
 ]

@@ -2,12 +2,24 @@ import 'package:flutter/material.dart';
 
 /// Build a fallback widget for web platform (webview_all not supported)
 Widget buildWebviewWidget({
+  required dynamic controller,
   required String initialContent,
   required bool javascriptEnabled,
+  dynamic javascriptMode,
   required bool allowNavigation,
   required bool debuggingEnabled,
   String? userAgent,
   bool zoomEnabled = true,
+  dynamic backgroundColor,
+  Set<String> javascriptChannels = const <String>{},
+  void Function(String url)? onPageStarted,
+  void Function(String url)? onPageFinished,
+  void Function(int progress)? onProgress,
+  dynamic onWebResourceError,
+  dynamic onNavigationRequest,
+  void Function(String channelName, String messageBody)? onJavaScriptMessage,
+  void Function(int x, int y)? onScrollPositionChange,
+  dynamic onConsoleMessage,
   int? remoteDebuggingPort,
 }) {
   // Extract URL from initialContent for display

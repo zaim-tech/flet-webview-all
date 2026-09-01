@@ -45,6 +45,29 @@ class WebViewNavigationRequestEvent(ft.Event["FletWebviewAll"]):
     is_main_frame: bool
 
 
+@dataclass
+class WebViewPermissionRequestEvent(ft.Event["FletWebviewAll"]):
+    """A web page requested access to protected WebView resources."""
+
+    resource_types: list[str]
+
+
+@dataclass
+class WebViewScrollEvent(ft.Event["FletWebviewAll"]):
+    """A WebView scroll-position update."""
+
+    x: int
+    y: int
+
+
+@dataclass
+class WebViewConsoleMessageEvent(ft.Event["FletWebviewAll"]):
+    """A message written to the page JavaScript console."""
+
+    message: str
+    level: str
+
+
 @ft.control("flet_webview_all")
 class FletWebviewAll(ft.LayoutControl):
     """A unified, controllable WebView backed by ``webview_all``.
@@ -63,6 +86,7 @@ class FletWebviewAll(ft.LayoutControl):
     user_agent: Optional[str] = None
     debugging_enabled: bool = False
     background_color: Optional[ft.ColorValue] = None
+    allow_webview_permissions: bool = False
     remote_debugging_port: Optional[int] = None
 
     on_page_started: Optional[ft.EventHandler[WebViewPageEvent]] = None
@@ -73,6 +97,9 @@ class FletWebviewAll(ft.LayoutControl):
     on_javascript_message: Optional[
         ft.EventHandler[WebViewJavaScriptMessageEvent]
     ] = None
+    on_permission_request: Optional[ft.EventHandler[WebViewPermissionRequestEvent]] = None
+    on_scroll_position_change: Optional[ft.EventHandler[WebViewScrollEvent]] = None
+    on_console_message: Optional[ft.EventHandler[WebViewConsoleMessageEvent]] = None
 
     async def reload(self) -> None:
         """Reload the current page."""
@@ -119,3 +146,35 @@ class FletWebviewAll(ft.LayoutControl):
         return await self._invoke_method(
             "run_javascript_returning_result", {"script": script}
         )
+
+    async def scroll_to(self, x: int, y: int) -> None:
+        """Scroll to an absolute document position."""
+        await self._invoke_method("scroll_to", {"x": x, "y": y})
+
+    async def scroll_by(self, delta_x: int, delta_y: int) -> None:
+        """Scroll by a relative document offset."""
+        await self._invoke_method("scroll_by", {"x": delta_x, "y": delta_y})
+
+    async def get_scroll_position(self) -> dict[str, int]:
+        """Return the current horizontal and vertical scroll offsets."""
+        return await self._invoke_method("get_scroll_position")
+
+    async def supports_set_scrollbars_enabled(self) -> bool:
+        """Return whether the current engine supports scrollbar visibility."""
+        return await self._invoke_method("supports_set_scrollbars_enabled")
+
+    async def set_vertical_scrollbar_enabled(self, enabled: bool) -> None:
+        """Show or hide the vertical scrollbar when supported."""
+        await self._invoke_method("set_vertical_scrollbar_enabled", {"enabled": enabled})
+
+    async def set_horizontal_scrollbar_enabled(self, enabled: bool) -> None:
+        """Show or hide the horizontal scrollbar when supported."""
+        await self._invoke_method("set_horizontal_scrollbar_enabled", {"enabled": enabled})
+
+    async def open_devtools(self) -> None:
+        """Open native WebView developer tools (Windows/WebView2 only)."""
+        await self._invoke_method("open_devtools")
+
+    async def get_webview_version(self) -> Optional[str]:
+        """Return the Windows WebView2 runtime version, when available."""
+        return await self._invoke_method("get_webview_version")

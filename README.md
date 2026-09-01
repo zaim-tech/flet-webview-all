@@ -93,6 +93,7 @@ page.add(
 | `user_agent` | `str \| None` | `None` | Overrides the WebView user-agent when provided. |
 | `debugging_enabled` | `bool` | `False` | Prints JavaScript console messages through Flutter's debug logger. |
 | `background_color` | `ft.ColorValue \| None` | `None` | Canvas color used before page content is rendered. |
+| `allow_webview_permissions` | `bool` | `False` | Grants or denies WebView camera/microphone requests (OS permission must be granted first). |
 | `remote_debugging_port` | `int \| None` | `None` | Windows-only, startup-time WebView2 CDP port (`1..65535`) for attaching Playwright to the visible WebView. |
 
 ### Playwright on Windows
@@ -200,11 +201,48 @@ cookies_were_cleared = await webview.clear_cookies()
 current_url = await webview.get_current_url()
 await webview.run_javascript("document.body.classList.add('ready')")
 result = await webview.run_javascript_returning_result("document.title")
+await webview.scroll_to(0, 0)
+await webview.scroll_by(0, 300)
+position = await webview.get_scroll_position()
+if await webview.supports_set_scrollbars_enabled():
+    await webview.set_vertical_scrollbar_enabled(False)
 ```
 
 `clear_cookies()` applies to all WebViews in the application. `stop_loading()`
 uses the browser-standard `window.stop()` because the upstream controller does
 not expose a native stop-loading method.
+
+## Permissions, scrolling, and debugging
+
+Request operating-system permissions first with the official
+[`flet-permission-handler`](https://flet.dev/docs/services/permissionhandler/)
+package, then allow the WebView layer:
+
+```python
+import flet_permission_handler as fph
+
+ph = fph.PermissionHandler()
+status = await ph.request(fph.Permission.MICROPHONE)
+if status and status.name.lower() == "granted":
+    webview.allow_webview_permissions = True
+    page.update()
+```
+
+Handle requests with `on_permission_request` and inspect
+`e.resource_types`. Requests are denied by default.
+
+For scrolling, use `scroll_to`, `scroll_by`, `get_scroll_position`, and
+`on_scroll_position_change`. The scrollbar visibility methods are guarded by
+`supports_set_scrollbars_enabled()` because support varies by engine.
+
+On Windows, `await webview.open_devtools()` opens WebView2 DevTools and
+`await webview.get_webview_version()` reports the runtime version. These are
+Windows-only; use `remote_debugging_port` for Playwright/CDP automation.
+
+See the dedicated [Examples](https://zaim-tech.github.io/flet-webview-all/examples/),
+[Permissions](https://zaim-tech.github.io/flet-webview-all/permissions/), and
+[Advanced APIs](https://zaim-tech.github.io/flet-webview-all/advanced/) pages
+for complete applications and platform-specific guidance.
 
 ## Platform support
 

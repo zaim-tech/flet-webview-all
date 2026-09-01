@@ -1,6 +1,7 @@
 import 'package:flet/flet.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_all/webview_all.dart';
+import 'package:webview_all_windows/webview_all_windows.dart';
 import 'webview_impl.dart';
 
 class FletWebviewAllControl extends StatefulWidget {
@@ -18,8 +19,21 @@ class _FletWebviewAllControlState extends State<FletWebviewAllControl> {
   @override
   void initState() {
     super.initState();
-    _controller = WebViewController();
+    _controller = WebViewController(
+      onPermissionRequest: _onPermissionRequest,
+    );
     widget.control.addInvokeMethodListener(_invokeMethod);
+  }
+
+  Future<void> _onPermissionRequest(WebViewPermissionRequest request) async {
+    widget.control.triggerEvent("permission_request", {
+      "resource_types": request.types.map((type) => type.name).toList(),
+    });
+    if (widget.control.getBool("allow_webview_permissions", false) ?? false) {
+      await request.grant();
+    } else {
+      await request.deny();
+    }
   }
 
   @override
@@ -56,6 +70,36 @@ class _FletWebviewAllControlState extends State<FletWebviewAllControl> {
         return _controller.runJavaScriptReturningResult(
           (args as Map?)?["script"] as String,
         );
+      case "scroll_to":
+        final map = args as Map;
+        return _controller.scrollTo(map["x"] as int, map["y"] as int);
+      case "scroll_by":
+        final map = args as Map;
+        return _controller.scrollBy(map["x"] as int, map["y"] as int);
+      case "get_scroll_position":
+        final position = await _controller.getScrollPosition();
+        return {"x": position.dx.round(), "y": position.dy.round()};
+      case "supports_set_scrollbars_enabled":
+        return _controller.supportsSetScrollBarsEnabled();
+      case "set_vertical_scrollbar_enabled":
+        return _controller.setVerticalScrollBarEnabled(
+          ((args as Map)["enabled"] as bool?) ?? true,
+        );
+      case "set_horizontal_scrollbar_enabled":
+        return _controller.setHorizontalScrollBarEnabled(
+          ((args as Map)["enabled"] as bool?) ?? true,
+        );
+      case "open_devtools":
+        final platform = _controller.platform;
+        if (platform is WindowsWebViewController) {
+          return platform.openDevTools();
+        }
+        throw UnsupportedError("DevTools opening is only supported on Windows");
+      case "get_webview_version":
+        if (_controller.platform is WindowsWebViewController) {
+          return WindowsWebViewController.getWebViewVersion();
+        }
+        throw UnsupportedError("WebView runtime version is only available on Windows");
       default:
         throw Exception("Unknown FletWebviewAll method: $name");
     }
@@ -120,6 +164,13 @@ class _FletWebviewAllControlState extends State<FletWebviewAllControl> {
         "channel_name": channelName,
         "message_body": messageBody,
       }),
+      onScrollPositionChange: (x, y) =>
+          control.triggerEvent("scroll_position_change", {"x": x, "y": y}),
+      onConsoleMessage: (message) =>
+          control.triggerEvent("console_message", {
+            "message": message.message,
+            "level": message.level.name,
+          }),
       remoteDebuggingPort: remoteDebuggingPort,
     );
 

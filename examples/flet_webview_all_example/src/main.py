@@ -10,7 +10,7 @@ DEFAULT_HTML = """
 <head>
     <title>FletWebviewAll Example</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f7f7f7; color: #333; }
+        body { font-family: Arial, sans-serif; margin: 20px; min-height: 2200px; background-color: #f7f7f7; color: #333; }
         p { color: #555; line-height: 1.6; }
         button { padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
         button:hover { background-color: #0056b3; }
@@ -53,11 +53,22 @@ def main(page: ft.Page):
 
     def on_progress(e):
         progress.value = e.progress / 100
-        print(progress.value)
         page.update()
 
     def on_javascript_message(e):
         status.value = f"{e.channel_name}: {e.message_body}"
+        page.update()
+
+    def on_permission_request(e):
+        status.value = f"WebView permission request: {', '.join(e.resource_types)}"
+        page.update()
+
+    def on_scroll_position_change(e):
+        status.value = f"Scroll position: ({e.x}, {e.y})"
+        page.update()
+
+    def on_console_message(e):
+        status.value = f"Console [{e.level}]: {e.message}"
         page.update()
 
     def set_webview_url(url: str):
@@ -132,17 +143,23 @@ def main(page: ft.Page):
         on_page_finished=on_page_finished,
         on_progress=on_progress,
         on_javascript_message=on_javascript_message,
+        on_permission_request=on_permission_request,
+        on_scroll_position_change=on_scroll_position_change,
+        on_console_message=on_console_message,
         remote_debugging_port=(
             int(REMOTE_DEBUGGING_PORT) if REMOTE_DEBUGGING_PORT else None
         ),
         expand=True,
     )
 
-    def on_setting_change(e):
+    async def on_setting_change(e):
         webview.allow_navigation = allow_nav_switch.value
         webview.zoom_enabled = zoom_switch.value
         webview.javascript_enabled = js_switch.value
         page.update()
+        # Reload so engines that apply JavaScript policy at document start
+        # cannot keep executing the already-loaded page.
+        await webview.reload()
 
     allow_nav_switch.on_change = on_setting_change
     zoom_switch.on_change = on_setting_change
@@ -162,6 +179,30 @@ def main(page: ft.Page):
     async def page_title(_):
         title = await webview.run_javascript_returning_result("document.title")
         status.value = f"Page title: {title}"
+        page.update()
+
+    async def scroll_top(_):
+        await webview.scroll_to(0, 0)
+
+    async def scroll_down(_):
+        await webview.scroll_by(0, 300)
+
+    async def hide_scrollbars(_):
+        if await webview.supports_set_scrollbars_enabled():
+            await webview.set_vertical_scrollbar_enabled(False)
+            await webview.set_horizontal_scrollbar_enabled(False)
+            status.value = "Scrollbars hidden"
+        else:
+            status.value = "Scrollbar visibility unsupported on this engine"
+        page.update()
+
+    async def inspect_webview(_):
+        try:
+            version = await webview.get_webview_version()
+            await webview.open_devtools()
+            status.value = f"WebView2 runtime: {version} (DevTools opened)"
+        except Exception as error:
+            status.value = f"DevTools is Windows/WebView2 only: {error}"
         page.update()
 
     controls_panel = ft.Column(
@@ -184,19 +225,32 @@ def main(page: ft.Page):
                 spacing=12,
                 wrap=True,
             ),
+            ft.Row(
+                [
+                    ft.Button("Scroll top", on_click=scroll_top),
+                    ft.Button("Scroll down 300px", on_click=scroll_down),
+                    ft.Button("Hide scrollbars", on_click=hide_scrollbars),
+                    ft.Button("Open DevTools", on_click=inspect_webview),
+                ],
+                spacing=8,
+                wrap=True,
+            ),
             ft.Row([progress, status], spacing=12, wrap=True),
         ],
         spacing=6,
     )
 
-    page.appbar = ft.AppBar(
+    appbar = ft.AppBar(
         title=controls_panel,
         toolbar_height=158,
         automatically_imply_leading=False,
         title_spacing=12,
     )
 
-    page.add(webview)
+    page.add(
+        appbar,
+        webview,
+    )
     
 
 if __name__ == "__main__":

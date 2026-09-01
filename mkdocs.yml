@@ -7,6 +7,9 @@ site_description: Cross-platform WebView control for Flet
 nav:
   - Home: index.md
   - Complete API guide: FletWebviewAll.md
+  - Examples: examples.md
+  - Permissions: permissions.md
+  - Advanced APIs: advanced.md
 
 theme:
   name: "material"
