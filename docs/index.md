@@ -1,210 +1,66 @@
 # FletWebviewAll
 
-A unified webview control for the Flet framework that provides cross-platform web content display.
-
-!!! important "Start here"
-    Read the [Complete API guide](FletWebviewAll.md) for a full application,
-    callback examples, JavaScript bridge usage, controller methods, Windows
-    debugging, and platform notes.
+A unified webview control for the [Flet](https://flet.dev) framework that
+provides consistent, cross-platform web content display on Android, iOS,
+macOS, Windows, and Web.
 
 **Project:** [GitHub repository](https://github.com/zaim-tech/flet-webview-all) ·
 **Install:** [PyPI package](https://pypi.org/project/flet-webview-all/) ·
 **Issues:** [GitHub Issues](https://github.com/zaim-tech/flet-webview-all/issues)
 
-## Overview
+## Why FletWebviewAll
 
-FletWebviewAll is a Flet extension that integrates the `webview_all` Flutter package, enabling you to display web content directly within your Flet applications. This control works seamlessly across Android, iOS, macOS, Windows, and Web platforms.
+FletWebviewAll wraps the `webview_all` Flutter package so a single Python
+control renders web content the same way across every Flet target. Instead
+of branching your app code per platform, you configure one
+`FletWebviewAll` control and let the extension handle the underlying
+Android, iOS, macOS, Windows, and Web WebView implementations.
 
-## Features
+- **Cross-platform** — one control, five platforms
+- **URL or HTML** — load remote pages or render inline HTML
+- **Two-way JavaScript** — run scripts, read results, and receive messages
+  back through named channels
+- **Full navigation & history control** — back/forward, reload, navigation
+  policies
+- **Built for debugging** — console capture, per-platform DevTools, and
+  Playwright/WebView2 CDP attachment on Windows
 
-- **Cross-Platform Support**: Works on Android, iOS, macOS, Windows, and Web
-- **URL Loading**: Load any HTTP, HTTPS, file://, or data: URLs
-- **HTML Content**: Display HTML content directly without needing an external URL
-- **JavaScript Support**: Enable or disable JavaScript execution
-- **Navigation Control**: Allow or restrict navigation to new URLs
-- **Zoom Support**: Built-in zoom controls for user convenience
-- **Custom User Agent**: Set custom user agent strings
-- **Debug Support**: Enable debugging for development and troubleshooting
-- **Playwright on Windows**: Attach to the visible WebView2 through a local CDP port
+## Get started
 
-## Installation
+<div class="grid cards" markdown>
 
-### Using as a Flet Extension
+- :material-download:{ .lg .middle } **Install & run your first webview**
 
-Add the dependency to your `pyproject.toml`:
+    ---
 
-```toml
-dependencies = [
-    "flet-webview-all @ git+https://github.com/yourusername/flet-webview-all",
-    "flet>=0.85.2",
-]
-```
+    Add the dependency and load your first page in a few lines.
 
-Or if published on PyPI:
+    [:octicons-arrow-right-24: Getting started](getting-started/installation.md)
 
-```toml
-dependencies = [
-    "flet-webview-all",
-    "flet>=0.85.2",
-]
-```
+- :material-cog:{ .lg .middle } **Browse the FletWebviewAll control**
 
-## Basic Usage
+    ---
 
-```python
-import flet as ft
-from flet_webview_all import FletWebviewAll
+    Every property, event, and controller method, organized into focused
+    pages.
 
-def main(page: ft.Page):
-    page.add(
-        FletWebviewAll(
-            url="https://www.example.com",
-            expand=True,
-        )
-    )
+    [:octicons-arrow-right-24: Control reference](controls/fletwebviewall/index.md)
 
-ft.run(main)
-```
+- :material-lightbulb-on:{ .lg .middle } **Copy a working recipe**
 
-## Properties
+    ---
 
-### url
-- **Type**: `Optional[str]`
-- **Default**: `None`
-- **Description**: The URL to load in the webview. Can be HTTP, HTTPS, file://, or data: URLs.
+    Navigation bars, JavaScript bridges, permission flows, and debugging
+    setups you can paste in directly.
 
-### html
-- **Type**: `Optional[str]`
-- **Default**: `None`
-- **Description**: HTML content to display directly in the webview (alternative to url).
+    [:octicons-arrow-right-24: Guides](guides/examples.md)
 
-### allow_navigation
-- **Type**: `bool`
-- **Default**: `True`
-- **Description**: Whether to allow navigation to new URLs by clicking links.
+- :material-book-open-variant:{ .lg .middle } **Look something up**
 
-### zoom_enabled
-- **Type**: `bool`
-- **Default**: `True`
-- **Description**: Whether zoom controls are available to users.
+    ---
 
-### javascript_enabled
-- **Type**: `bool`
-- **Default**: `True`
-- **Description**: Whether JavaScript execution is enabled.
+    Platform notes, best practices, troubleshooting, and project links.
 
-### user_agent
-- **Type**: `Optional[str]`
-- **Default**: `None`
-- **Description**: Custom User-Agent string to use for requests.
+    [:octicons-arrow-right-24: Reference](reference/platform-notes.md)
 
-### debugging_enabled
-- **Type**: `bool`
-- **Default**: `False`
-- **Description**: Enable debugging for development purposes.
-
-### remote_debugging_port
-- **Type**: `Optional[int]`
-- **Default**: `None`
-- **Description**: Windows-only, startup-time WebView2 CDP port (`1..65535`) for Playwright attachment. Use only for development and testing.
-
-## Layout Properties
-
-As FletWebviewAll extends `LayoutControl`, it inherits all standard layout properties including:
-- `expand`
-- `width` / `height`
-- `margin` / `padding`
-- `alignment`
-- `opacity`
-- `rotation`
-- `scale`
-- `offset`
-- And many more...
-
-See the [Flet LayoutControl documentation](https://flet.dev/docs/reference/controls/layoutcontrol) for complete list of inherited properties.
-
-## Examples
-
-### Load a Website
-
-```python
-import flet as ft
-from flet_webview_all import FletWebviewAll
-
-def main(page: ft.Page):
-    page.add(
-        FletWebviewAll(
-            url="https://www.google.com",
-            expand=True,
-        )
-    )
-
-ft.run(main)
-```
-
-### Display HTML Content
-
-```python
-import flet as ft
-from flet_webview_all import FletWebviewAll
-
-def main(page: ft.Page):
-    html_content = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>My Page</title>
-        <style>
-            body { font-family: Arial; margin: 20px; }
-            h1 { color: #333; }
-        </style>
-    </head>
-    <body>
-        <h1>Hello from FletWebviewAll!</h1>
-        <p>This HTML content is rendered directly in the webview.</p>
-    </body>
-    </html>
-    """
-    
-    page.add(
-        FletWebviewAll(
-            html=html_content,
-            expand=True,
-        )
-    )
-
-ft.run(main)
-```
-
-### Control Settings
-
-```python
-import flet as ft
-from flet_webview_all import FletWebviewAll
-
-def main(page: ft.Page):
-    webview = FletWebviewAll(
-        url="https://www.example.com",
-        javascript_enabled=True,
-        zoom_enabled=True,
-        allow_navigation=True,
-        expand=True,
-    )
-    
-    def toggle_js(e):
-        webview.javascript_enabled = not webview.javascript_enabled
-        page.update()
-    
-    page.add(
-        ft.Column([
-            ft.ElevatedButton("Toggle JavaScript", on_click=toggle_js),
-            webview,
-        ], expand=True)
-    )
-
-ft.run(main)
-```
-
-## Classes
-
-[FletWebviewAll](FletWebviewAll.md)
+</div>

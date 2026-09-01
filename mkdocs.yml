@@ -6,20 +6,82 @@ site_description: Cross-platform WebView control for Flet
 
 nav:
   - Home: index.md
-  - Complete API guide: FletWebviewAll.md
-  - Examples: examples.md
-  - Permissions: permissions.md
-  - Advanced APIs: advanced.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+  - Controls:
+      - FletWebviewAll:
+          - Overview: controls/fletwebviewall/index.md
+          - Properties: controls/fletwebviewall/properties.md
+          - Events: controls/fletwebviewall/events.md
+          - Controller methods: controls/fletwebviewall/methods.md
+          - Playwright (Windows CDP): controls/fletwebviewall/playwright.md
+  - Guides:
+      - Examples: guides/examples.md
+      - Permissions: guides/permissions.md
+      - Scrolling: guides/scrolling.md
+      - Debugging & DevTools: guides/debugging.md
+      - Console capture: guides/console.md
+  - Reference:
+      - Platform notes: reference/platform-notes.md
+      - Best practices: reference/best-practices.md
+      - Troubleshooting: reference/troubleshooting.md
+      - Resources: reference/resources.md
 
 theme:
   name: "material"
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
   features:
-    - search.suggest    
-    - search.highlight  
-    - search.share      
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - toc:
+      permalink: true
 
 plugins:
-  - search            
+  - search
   - mkdocstrings:
       handlers:
         python:
