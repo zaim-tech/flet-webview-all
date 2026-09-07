@@ -9,17 +9,15 @@ The example's working directory is set explicitly so Flet finds its
 
 ```yaml
 name: Build Flet App
-
 on:
   push:
   pull_request:
   workflow_dispatch:
-
 env:
-  UV_PYTHON: "3.12"
-  PYTHONUTF8: "1"
-  FLET_CLI_NO_RICH_OUTPUT: "1"
-
+  UV_PYTHON: 3.12
+  PYTHONUTF8: 1
+  # https://flet.dev/docs/reference/environment-variables
+  FLET_CLI_NO_RICH_OUTPUT: 1
 jobs:
   build:
     name: Build ${{ matrix.name }}
@@ -28,81 +26,76 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # -------- Desktop --------
           - name: linux
             runner: ubuntu-latest
-            target: linux
+            build_cmd: "flet build linux"
             artifact_path: build/linux
             needs_linux_deps: true
           - name: macos
-            runner: macos-latest
-            target: macos
+            runner: macos-26
+            build_cmd: "flet build macos"
             artifact_path: build/macos
             needs_linux_deps: false
           - name: windows
             runner: windows-latest
-            target: windows
+            build_cmd: "flet build windows"
             artifact_path: build/windows
             needs_linux_deps: false
+          # -------- Android --------
           - name: aab
             runner: ubuntu-latest
-            target: aab
+            build_cmd: "flet build aab"
             artifact_path: build/aab
             needs_linux_deps: false
           - name: apk
             runner: ubuntu-latest
-            target: apk
+            build_cmd: "flet build apk"
             artifact_path: build/apk
             needs_linux_deps: false
+          # -------- iOS --------
           - name: ipa
-            runner: macos-latest
-            target: ipa
+            runner: macos-26
+            build_cmd: "flet build ipa"
             artifact_path: build/ipa
             needs_linux_deps: false
           - name: ios-simulator
-            runner: macos-latest
-            target: ios-simulator
+            runner: macos-26
+            build_cmd: "flet build ios-simulator"
             artifact_path: build/ios-simulator
             needs_linux_deps: false
+          # -------- Web --------
           - name: web
             runner: ubuntu-latest
-            target: web
+            build_cmd: "flet build web"
             artifact_path: build/web
             needs_linux_deps: false
-
-    defaults:
-      run:
-        working-directory: examples/flet_webview_all_example
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Set up uv
+      - name: Setup uv
         uses: astral-sh/setup-uv@v6
-        with:
-          python-version: "${{ env.UV_PYTHON }}"
-
       - name: Install Linux dependencies
         if: matrix.needs_linux_deps
         shell: bash
         run: |
-          sudo apt-get update --allow-releaseinfo-change
-          linux_deps="$(uv run flet --version --json | jq -r '.linux_dependencies | join(" ")')"
-          sudo apt-get install -y --no-install-recommends $linux_deps
-          sudo apt-get install -y --no-install-recommends \
-            libwebkit2gtk-4.1-dev \
-            libgtk-3-dev
-          sudo apt-get clean
-
+            sudo apt update --allow-releaseinfo-change
+            LINUX_DEPS="$(uv run flet --version --json | jq -r '.linux_dependencies | join(" ")')"
+            sudo apt-get install -y --no-install-recommends $LINUX_DEPS
+            # Required by the webview_all Flutter plugin (not covered by flet's own dependency list)
+            sudo apt-get install -y --no-install-recommends \
+              libwebkit2gtk-4.1-dev \
+              libgtk-3-dev
+            sudo apt-get clean
       - name: Build app
         shell: bash
-        run: uv run flet build ${{ matrix.target }} --yes --verbose
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        run: |
+          uv run ${{ matrix.build_cmd }} --yes --verbose
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v5.0.0
         with:
           name: ${{ matrix.name }}-build-artifact
-          path: examples/flet_webview_all_example/${{ matrix.artifact_path }}
+          path: ${{ matrix.artifact_path }}
           if-no-files-found: error
           overwrite: false
 ```
