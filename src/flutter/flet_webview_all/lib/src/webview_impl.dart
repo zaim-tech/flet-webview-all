@@ -189,7 +189,7 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
         oldWidget.zoomEnabled != widget.zoomEnabled ||
         oldWidget.backgroundColor != widget.backgroundColor ||
         oldWidget.javascriptChannels != widget.javascriptChannels) {
-      unawaited(_configureController());
+      unawaited(_configureAndRefresh());
     }
 
     if (oldWidget.initialContent != widget.initialContent) {
@@ -200,6 +200,15 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
   Future<void> _initialize() async {
     await _configureController();
     await _loadContent(widget.initialContent);
+  }
+
+  Future<void> _configureAndRefresh() async {
+    await _configureController();
+    if (_looksLikeHtml(widget.initialContent)) {
+      await _controller.loadHtmlString(widget.initialContent);
+    } else {
+      await _controller.reload();
+    }
   }
 
   Future<void> _configureController() async {
@@ -301,12 +310,7 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // On Windows, webview_all renders WebView2 into a Flutter GPU texture.
-    // During a fullscreen transition (and occasionally a DPI transition) the
-    // texture can retain its old surface dimensions while Flutter stretches it
-    // to the new constraints. The wrapper below makes the backend report the
-    // new surface size again without recreating this widget or its controller.
-    return _ViewportSynchronizedWebView(controller: _controller);
+    return WebViewWidget(controller: _controller);
   }
 }
 

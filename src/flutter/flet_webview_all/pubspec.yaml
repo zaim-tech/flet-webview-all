@@ -11,8 +11,8 @@ dependencies:
   flet: ^0.86.5
   flutter:
     sdk: flutter
-  webview_all: ^1.3.3
-  webview_all_windows: ^1.3.3
+  webview_all: 1.4.0
+  webview_all_windows: 1.4.0
 
 dev_dependencies:
   flutter_test:
