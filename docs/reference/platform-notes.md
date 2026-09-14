@@ -15,6 +15,20 @@
 - Full JavaScript support
 - Custom User-Agent supported
 
+## Linux
+- Install the WebKitGTK 4.1 development/runtime packages before building.
+- On Ubuntu-style systems:
+
+  ```bash
+  sudo apt-get install libwebkit2gtk-4.1-dev
+  ```
+
+- The implementation positions a native WebKitGTK widget above the Flutter
+  view.
+- The plugin installs the required `GtkOverlay` before the standard Flutter
+  runner realizes its `FlView`; applications do not need to modify
+  `linux/runner/my_application.cc`.
+
 ## Windows
 - Requires Windows 10 or higher
 - WebView2 must be installed on the system

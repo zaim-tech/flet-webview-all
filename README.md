@@ -261,6 +261,20 @@ Support is supplied by the underlying [`webview_all`](https://pub.dev/packages/w
 
 Platform WebView engines can differ in their capabilities. Test the settings your application relies on on each target platform.
 
+### Linux prerequisites
+
+Before building for Linux, install the WebKitGTK 4.1 development/runtime
+packages for your distribution. On Ubuntu-style systems:
+
+```bash
+sudo apt-get install libwebkit2gtk-4.1-dev
+```
+
+The Linux implementation positions a native WebKitGTK widget above the Flutter
+view. The plugin installs the required `GtkOverlay` before the standard Flutter
+runner realizes its `FlView`; applications do not need to modify
+`linux/runner/my_application.cc`.
+
 ## Build the example
 
 After changing the extension or its native dependencies, rebuild the example
