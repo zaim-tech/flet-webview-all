@@ -91,7 +91,7 @@ Edit `src/main.py` to:
 ## Requirements
 
 - Python 3.10+
-- Flet >= 0.85.2
+- Flet >=0.86.5
 - flet-webview-all extension
 
 ## Platform Notes

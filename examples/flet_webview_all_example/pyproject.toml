@@ -9,14 +9,14 @@ authors = [
 ]
 dependencies = [
     "flet-webview-all",
-    "flet>=0.85.2",
+    "flet>=0.86.5",
 ]
 
 [dependency-groups]
 dev = [
-    "flet-cli>=0.85.2",
-    "flet-desktop>=0.85.2",
-    "flet-web>=0.85.2",
+    "flet-cli>=0.86.5",
+    "flet-desktop>=0.86.5",
+    "flet-web>=0.86.5",
 ]
 
 [tool.flet]

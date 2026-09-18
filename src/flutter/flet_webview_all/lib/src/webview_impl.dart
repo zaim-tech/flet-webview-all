@@ -188,7 +188,10 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
         oldWidget.userAgent != widget.userAgent ||
         oldWidget.zoomEnabled != widget.zoomEnabled ||
         oldWidget.backgroundColor != widget.backgroundColor ||
-        oldWidget.javascriptChannels != widget.javascriptChannels) {
+        !setEquals(
+          oldWidget.javascriptChannels,
+          widget.javascriptChannels,
+        )) {
       unawaited(_configureAndRefresh());
     }
 

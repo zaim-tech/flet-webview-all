@@ -134,6 +134,14 @@ def main(page: ft.Page):
         page_label.value = f"Page title: {title}"
         page.update()
 
+    async def open_devtools(_):
+        try:
+            await webview.open_devtools()
+            page_label.value = "WebView DevTools opened"
+        except Exception as error:
+            page_label.value = f"DevTools unavailable: {error}"
+        page.update()
+
     sidebar = ft.Container(
         width=190,
         padding=ft.Padding.only(left=18, right=12, top=24, bottom=18),
@@ -151,12 +159,17 @@ def main(page: ft.Page):
                 ft.TextButton("Back", icon=ft.Icons.ARROW_BACK, on_click=go_back),
                 ft.TextButton("Forward", icon=ft.Icons.ARROW_FORWARD, on_click=go_forward),
                 ft.TextButton("Reload", icon=ft.Icons.REFRESH, on_click=reload),
+                ft.TextButton(
+                    "Open DevTools",
+                    icon=ft.Icons.BUG_REPORT,
+                    on_click=open_devtools,
+                ),
                 ft.TextButton("Bridge lab", icon=ft.Icons.BOLT, on_click=open_bridge_test),
                 ft.Container(expand=True),
                 ft.Text("Windows WebView desk", size=13, color=ft.Colors.BLACK),
             ],
             spacing=4,
-            
+            expand=True,
         ),
     )
 
