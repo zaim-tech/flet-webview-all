@@ -2,6 +2,19 @@
 name = "flet-webview-all"
 version = "0.2.1"
 description = "FletWebviewAll control for Flet"
+keywords = [
+    "flet",
+    "webview",
+    "flet-webview-all",
+    "flutter",
+    "webview_all",
+    "android",
+    "ios",
+    "linux",
+    "macos",
+    "windows",
+    "web",
+]
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
