@@ -40,5 +40,10 @@ path = "src"
 [tool.flet.dev_packages]
 flet-webview-all = "../.." # relative path
 
+# Flet's build template overrides jni to 1.0.0, but jni_flutter >=1.0.4
+# (pulled in by path_provider_android) requires jni ^1.1.0.
+[tool.flet.flutter.pubspec.dependency_overrides]
+jni_flutter = "1.0.3"
+
 [tool.uv.sources]
 flet-webview-all = { path = "../..", editable = true }
