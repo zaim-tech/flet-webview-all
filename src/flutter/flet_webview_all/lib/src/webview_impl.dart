@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_all/webview_all.dart';
+import 'ad_block_engine.dart';
 import 'webview_environment.dart';
 
 /// Build a WebView widget for mobile and desktop platforms.
@@ -26,6 +28,11 @@ Widget buildWebviewWidget({
   void Function(int x, int y)? onScrollPositionChange,
   void Function(JavaScriptConsoleMessage message)? onConsoleMessage,
   int? remoteDebuggingPort,
+  bool adBlockEnabled = false,
+  Set<String>? adBlockFilters,
+  Set<String> adBlockAllowedDomains = const <String>{},
+  Set<String> adBlockBlockedDomains = const <String>{},
+  void Function(String url, bool isMainFrame)? onAdBlocked,
 }) {
   final webview = _WebviewAllWidget(
     controller: controller,
@@ -46,6 +53,11 @@ Widget buildWebviewWidget({
     onJavaScriptMessage: onJavaScriptMessage,
     onScrollPositionChange: onScrollPositionChange,
     onConsoleMessage: onConsoleMessage,
+    adBlockEnabled: adBlockEnabled,
+    adBlockFilters: adBlockFilters,
+    adBlockAllowedDomains: adBlockAllowedDomains,
+    adBlockBlockedDomains: adBlockBlockedDomains,
+    onAdBlocked: onAdBlocked,
   );
 
   if (remoteDebuggingPort == null ||
@@ -140,6 +152,11 @@ class _WebviewAllWidget extends StatefulWidget {
       onJavaScriptMessage;
   final void Function(int x, int y)? onScrollPositionChange;
   final void Function(JavaScriptConsoleMessage message)? onConsoleMessage;
+  final bool adBlockEnabled;
+  final Set<String>? adBlockFilters;
+  final Set<String> adBlockAllowedDomains;
+  final Set<String> adBlockBlockedDomains;
+  final void Function(String url, bool isMainFrame)? onAdBlocked;
 
   const _WebviewAllWidget({
     required this.controller,
@@ -160,6 +177,11 @@ class _WebviewAllWidget extends StatefulWidget {
     required this.onJavaScriptMessage,
     required this.onScrollPositionChange,
     required this.onConsoleMessage,
+    required this.adBlockEnabled,
+    required this.adBlockFilters,
+    required this.adBlockAllowedDomains,
+    required this.adBlockBlockedDomains,
+    required this.onAdBlocked,
   });
 
   @override
@@ -188,6 +210,15 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
         oldWidget.userAgent != widget.userAgent ||
         oldWidget.zoomEnabled != widget.zoomEnabled ||
         oldWidget.backgroundColor != widget.backgroundColor ||
+        oldWidget.adBlockEnabled != widget.adBlockEnabled ||
+        !setEquals(
+          oldWidget.adBlockAllowedDomains,
+          widget.adBlockAllowedDomains,
+        ) ||
+        !setEquals(
+          oldWidget.adBlockBlockedDomains,
+          widget.adBlockBlockedDomains,
+        ) ||
         !setEquals(
           oldWidget.javascriptChannels,
           widget.javascriptChannels,
@@ -215,10 +246,18 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
   }
 
   Future<void> _configureController() async {
+    if (widget.adBlockEnabled) {
+      // Never throws; without filters the page simply loads unblocked.
+      await AdBlockEngine.instance.ensureReady(widget.adBlockFilters);
+    }
     await _controller.setJavaScriptMode(_javascriptMode());
     await _controller.setNavigationDelegate(
       NavigationDelegate(
         onNavigationRequest: (NavigationRequest request) {
+          if (_shouldBlockNavigation(request)) {
+            widget.onAdBlocked?.call(request.url, request.isMainFrame);
+            return NavigationDecision.prevent;
+          }
           final allowed = widget.onNavigationRequest?.call(request) ??
               (widget.allowNavigation ||
                   (!_looksLikeHtml(widget.initialContent) &&
@@ -229,7 +268,12 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
           return NavigationDecision.prevent;
         },
         onPageStarted: widget.onPageStarted,
-        onPageFinished: widget.onPageFinished,
+        onPageFinished: (String url) {
+          widget.onPageFinished?.call(url);
+          if (widget.adBlockEnabled) {
+            unawaited(_injectCosmeticRules(url));
+          }
+        },
         onProgress: widget.onProgress,
         onWebResourceError: widget.onWebResourceError,
       ),
@@ -257,6 +301,43 @@ class _WebviewAllWidgetState extends State<_WebviewAllWidget> {
     final backgroundColor = widget.backgroundColor;
     if (backgroundColor != null) {
       await _controller.setBackgroundColor(backgroundColor);
+    }
+  }
+
+  bool _shouldBlockNavigation(NavigationRequest request) {
+    if (!widget.adBlockEnabled) {
+      return false;
+    }
+    // Never block the page the application asked to load.
+    if (request.url == widget.initialContent) {
+      return false;
+    }
+    return AdBlockEngine.instance.shouldBlock(
+      request.url,
+      allowedDomains: widget.adBlockAllowedDomains,
+      blockedDomains: widget.adBlockBlockedDomains,
+    );
+  }
+
+  Future<void> _injectCosmeticRules(String url) async {
+    final css = AdBlockEngine.instance.cosmeticCss(
+      url,
+      allowedDomains: widget.adBlockAllowedDomains,
+    );
+    if (css == null) {
+      return;
+    }
+    // jsonEncode produces a valid JavaScript string literal.
+    final script = "(function(){var id='__flet_adblock_css';"
+        "var s=document.getElementById(id);"
+        "if(!s){s=document.createElement('style');s.id=id;"
+        "(document.head||document.documentElement).appendChild(s);}"
+        "s.textContent=${jsonEncode(css)};})();";
+    try {
+      await _controller.runJavaScript(script);
+    } catch (error) {
+      // The page may have navigated away or JavaScript may be disabled.
+      debugPrint('FletWebviewAll: could not apply ad-block CSS: $error');
     }
   }
 

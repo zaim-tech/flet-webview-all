@@ -21,6 +21,11 @@ Widget buildWebviewWidget({
   void Function(int x, int y)? onScrollPositionChange,
   dynamic onConsoleMessage,
   int? remoteDebuggingPort,
+  bool adBlockEnabled = false,
+  Set<String>? adBlockFilters,
+  Set<String> adBlockAllowedDomains = const <String>{},
+  Set<String> adBlockBlockedDomains = const <String>{},
+  void Function(String url, bool isMainFrame)? onAdBlocked,
 }) {
   // Extract URL from initialContent for display
   String? displayUrl;

@@ -68,12 +68,24 @@ class WebViewConsoleMessageEvent(ft.Event["FletWebviewAll"]):
     level: str
 
 
+@dataclass
+class WebViewAdBlockedEvent(ft.Event["FletWebviewAll"]):
+    """A request that the built-in ad blocker stopped."""
+
+    url: str
+    is_main_frame: bool
+
+
 @ft.control("flet_webview_all")
 class FletWebviewAll(ft.LayoutControl):
     """A unified, controllable WebView backed by ``webview_all``.
 
     Event handlers receive the typed event objects declared above. Controller
     methods are coroutines and must be awaited after the control is on a page.
+
+    Ad and tracker blocking is built in and enabled by default. It uses
+    EasyList and AdGuard filter lists. Set ``ad_block_enabled=False`` to opt
+    out for a given WebView.
     """
 
     url: Optional[str] = None
@@ -89,6 +101,22 @@ class FletWebviewAll(ft.LayoutControl):
     allow_webview_permissions: bool = False
     remote_debugging_port: Optional[int] = None
 
+    ad_block_enabled: bool = True
+    """Block ads and trackers and hide ad elements. Enabled by default."""
+
+    ad_block_filters: Optional[list[str]] = None
+    """Filter lists to load: any of ``"easylist"`` and ``"adguard"``.
+
+    ``None`` loads both. Filter lists are loaded once per application and
+    shared by every WebView, so the first WebView to start decides the lists.
+    """
+
+    ad_block_allowed_domains: Optional[list[str]] = None
+    """Domains where blocking is skipped. Subdomains are included."""
+
+    ad_block_blocked_domains: Optional[list[str]] = None
+    """Extra domains to always block, in addition to the filter lists."""
+
     on_page_started: Optional[ft.EventHandler[WebViewPageEvent]] = None
     on_page_finished: Optional[ft.EventHandler[WebViewPageEvent]] = None
     on_progress: Optional[ft.EventHandler[WebViewProgressEvent]] = None
@@ -100,6 +128,7 @@ class FletWebviewAll(ft.LayoutControl):
     on_permission_request: Optional[ft.EventHandler[WebViewPermissionRequestEvent]] = None
     on_scroll_position_change: Optional[ft.EventHandler[WebViewScrollEvent]] = None
     on_console_message: Optional[ft.EventHandler[WebViewConsoleMessageEvent]] = None
+    on_ad_blocked: Optional[ft.EventHandler[WebViewAdBlockedEvent]] = None
 
     async def reload(self) -> None:
         """Reload the current page."""
@@ -178,3 +207,16 @@ class FletWebviewAll(ft.LayoutControl):
     async def get_webview_version(self) -> Optional[str]:
         """Return the Windows WebView2 runtime version, when available."""
         return await self._invoke_method("get_webview_version")
+
+    async def get_ad_block_stats(self) -> dict[str, Any]:
+        """Return ad-blocking counters for this application.
+
+        Keys: ``blocked_resource_count`` (int), ``css_rules_applied_count``
+        (int) and ``blocked_domains`` (``dict[str, int]``, hits per domain).
+        Counters are shared by all WebViews in the application.
+        """
+        return await self._invoke_method("get_ad_block_stats")
+
+    async def reset_ad_block_stats(self) -> None:
+        """Reset the ad-blocking counters, e.g. before loading a new page."""
+        await self._invoke_method("reset_ad_block_stats")

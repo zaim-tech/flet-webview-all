@@ -12,6 +12,8 @@ For automated multi-platform builds, see the [GitHub Actions build guide](https:
 
 The control is a `ft.LayoutControl`, so it can use Flet layout properties such as `expand`, `width`, `height`, and `visible`.
 
+Ad bocking is enabled by default.
+
 ## Installation
 
 Install the published package from PyPI:
@@ -97,6 +99,9 @@ page.add(
 | `background_color` | `ft.ColorValue \| None` | `None` | Canvas color used before page content is rendered. |
 | `allow_webview_permissions` | `bool` | `False` | Grants or denies WebView camera/microphone requests (OS permission must be granted first). |
 | `remote_debugging_port` | `int \| None` | `None` | Windows-only, startup-time WebView2 CDP port (`1..65535`) for attaching Playwright to the visible WebView. |
+| `ad_block_enabled` | `bool` | `True` | Toggle to disable ad blocking. |
+| `ad_block_allowed_domains` | `str \| None` | `None` | array of domains that are allowed to show ads. |
+| `ad_block_blocked_domains` | `str \| None` | `None` | array of domains that are blocked from showing ads. |
 
 ### Playwright on Windows
 
@@ -167,6 +172,9 @@ webview = FletWebviewAll(
     url="https://example.com",
     javascript_channels=["FletBridge"],
     background_color=ft.Colors.BLUE_GREY_900,
+    ad_block_allowed_domains=["example.com"],   # never block here (subdomains too)
+    ad_block_blocked_domains=["adserver.somedomain.com",],    # always block
+    on_ad_blocked=lambda e: print("blocked", e.url, e.is_main_frame),
     on_page_started=lambda e: print("Starting", e.url),
     on_page_finished=lambda e: print("Finished", e.url),
     on_progress=lambda e: print(f"{e.progress}%"),

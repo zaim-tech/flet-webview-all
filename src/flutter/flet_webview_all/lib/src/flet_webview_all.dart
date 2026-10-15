@@ -2,6 +2,7 @@ import 'package:flet/flet.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_all/webview_all.dart';
 import 'package:webview_all_windows/webview_all_windows.dart';
+import 'ad_block_engine.dart';
 import 'webview_impl.dart';
 
 class FletWebviewAllControl extends StatefulWidget {
@@ -95,6 +96,11 @@ class _FletWebviewAllControlState extends State<FletWebviewAllControl> {
           return platform.openDevTools();
         }
         throw UnsupportedError("DevTools opening is only supported on Windows");
+      case "get_ad_block_stats":
+        return AdBlockEngine.instance.stats();
+      case "reset_ad_block_stats":
+        AdBlockEngine.instance.resetStatistics();
+        return null;
       case "get_webview_version":
         if (_controller.platform is WindowsWebViewController) {
           return WindowsWebViewController.getWebViewVersion();
@@ -124,6 +130,22 @@ class _FletWebviewAllControlState extends State<FletWebviewAllControl> {
             ?.whereType<String>()
             .toSet() ??
         const <String>{};
+
+    final adBlockEnabled = control.getBool("ad_block_enabled", true) ?? true;
+    // null means "use every bundled filter list".
+    final adBlockFilters = (control.get("ad_block_filters") as List?)
+        ?.whereType<String>()
+        .toSet();
+    final adBlockAllowedDomains =
+        (control.get("ad_block_allowed_domains") as List?)
+                ?.whereType<String>()
+                .toSet() ??
+            const <String>{};
+    final adBlockBlockedDomains =
+        (control.get("ad_block_blocked_domains") as List?)
+                ?.whereType<String>()
+                .toSet() ??
+            const <String>{};
 
     final initialContent = url ?? html ?? "about:blank";
     final myControl = buildWebviewWidget(
@@ -172,6 +194,14 @@ class _FletWebviewAllControlState extends State<FletWebviewAllControl> {
             "level": message.level.name,
           }),
       remoteDebuggingPort: remoteDebuggingPort,
+      adBlockEnabled: adBlockEnabled,
+      adBlockFilters: adBlockFilters,
+      adBlockAllowedDomains: adBlockAllowedDomains,
+      adBlockBlockedDomains: adBlockBlockedDomains,
+      onAdBlocked: (url, isMainFrame) => control.triggerEvent("ad_blocked", {
+        "url": url,
+        "is_main_frame": isMainFrame,
+      }),
     );
 
     return LayoutControl(control: control, child: myControl);

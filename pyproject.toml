@@ -21,7 +21,7 @@ authors = [
     { name = "Flet contributors", email = "you@example.com" }
 ]
 dependencies = [
-    "flet>=0.86.5",
+    "flet>=1.0.0",
 ]
 
 [dependency-groups]
