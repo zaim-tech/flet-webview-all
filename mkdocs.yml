@@ -13,6 +13,7 @@ nav:
       - FletWebviewAll:
           - Overview: controls/fletwebviewall/index.md
           - Properties: controls/fletwebviewall/properties.md
+          - Ad blocking: controls/fletwebviewall/ad-blocking.md
           - Events: controls/fletwebviewall/events.md
           - Controller methods: controls/fletwebviewall/methods.md
           - Playwright (Windows CDP): controls/fletwebviewall/playwright.md

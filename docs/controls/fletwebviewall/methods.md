@@ -21,6 +21,8 @@ if await webview.supports_set_scrollbars_enabled():
     await webview.set_vertical_scrollbar_enabled(False)
 await webview.open_devtools()  # Windows/WebView2 only
 version = await webview.get_webview_version()  # Windows/WebView2 only
+    stats = await webview.get_ad_block_stats()
+    await webview.reset_ad_block_stats()
 ```
 
 `clear_cookies()` clears the cookie store shared by application WebViews.
@@ -50,6 +52,9 @@ async def browser_actions(_):
 All methods are asynchronous and require the control to have been added to
 a page. `clear_cookies()` affects the application-wide WebView cookie
 store.
+
+Ad-blocking counters are shared by all WebViews in the application. See
+[Ad blocking](ad-blocking.md) for the counter fields and filter behavior.
 
 ## More practical recipes
 

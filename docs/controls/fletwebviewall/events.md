@@ -11,6 +11,7 @@
 | `on_permission_request` | `resource_types` | A page requested protected WebView resources. |
 | `on_scroll_position_change` | `x`, `y` | The document scroll position changed. |
 | `on_console_message` | `level`, `message` | A page wrote to the JavaScript console. |
+| `on_ad_blocked` | `url`, `is_main_frame` | A navigation was blocked by the built-in ad blocker. |
 
 !!! warning "`on_navigation_request` is observational"
     Since Flet control events are asynchronous, its Python handler cannot
@@ -66,3 +67,4 @@ the already pending native decision.
   `debugging_enabled`.
 - [Permissions](../../guides/permissions.md) for `on_permission_request`.
 - [Scrolling](../../guides/scrolling.md) for `on_scroll_position_change`.
+- [Ad blocking](ad-blocking.md) for `on_ad_blocked` and filter behavior.

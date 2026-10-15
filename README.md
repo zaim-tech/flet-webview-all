@@ -27,7 +27,7 @@ Or add it to your application's `pyproject.toml`:
 ```toml
 [project]
 dependencies = [
-    "flet>=0.86.5",
+    "flet>=1.0.0",
     "flet-webview-all",
 ]
 ```
@@ -37,7 +37,7 @@ To install the latest unreleased version directly from GitHub instead, use:
 ```toml
 [project]
 dependencies = [
-    "flet>=0.86.5",
+    "flet>=1.0.0",
     "flet-webview-all @ git+https://github.com/zaim-tech/flet-webview-all.git",
 ]
 ```

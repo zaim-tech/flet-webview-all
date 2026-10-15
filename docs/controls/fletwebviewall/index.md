@@ -15,8 +15,9 @@ styling properties while adding webview-specific functionality.
 | Page | Covers |
 | --- | --- |
 | [Properties](properties.md) | `url`, `html`, navigation, zoom, JavaScript, user agent, debugging, background color, permissions flag, remote debugging port, plus everything inherited from `LayoutControl` |
-| [Events](events.md) | Lifecycle, navigation, JavaScript-message, permission-request, scroll, and console events |
-| [Controller methods](methods.md) | Async methods for history, reload, cache/cookies, running JavaScript, and scrolling |
+| [Ad blocking](ad-blocking.md) | Filter lists, domain rules, blocked-request events, statistics, and limitations |
+| [Events](events.md) | Lifecycle, navigation, JavaScript-message, permission-request, scroll, console, and ad-blocking events |
+| [Controller methods](methods.md) | Async methods for history, reload, cache/cookies, running JavaScript, scrolling, and ad-blocking statistics |
 | [Playwright (Windows CDP)](playwright.md) | Attaching Playwright to the visible WebView2 instance for automated testing |
 
 ## Complete application example

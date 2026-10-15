@@ -11,7 +11,7 @@ In your `pyproject.toml`:
 ```toml
 dependencies = [
     "flet-webview-all @ git+https://github.com/yourusername/flet-webview-all",
-    "flet>=0.85.2",
+    "flet>=1.0.0",
 ]
 ```
 
@@ -20,7 +20,7 @@ Or, once published on PyPI:
 ```toml
 dependencies = [
     "flet-webview-all",
-    "flet>=0.85.2",
+    "flet>=1.0.0",
 ]
 ```
 
