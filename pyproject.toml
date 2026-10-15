@@ -1,6 +1,6 @@
 [project]
 name = "flet-webview-all"
-version = "0.2.1"
+version = "0.3.0"
 description = "FletWebviewAll control for Flet"
 keywords = [
     "flet",

@@ -8,11 +8,11 @@ environment:
   flutter: ">=1.17.0"
 
 dependencies:
-  flet: ^0.86.5
+  flet: ^1.0.0
   flutter:
     sdk: flutter
-  webview_all: ^1.4.0
-  webview_all_windows: ^1.4.0
+  webview_all: ^1.4.4
+  webview_all_windows: ^1.4.4
   adblocker_manager: ^1.1.0
 
 dev_dependencies:
